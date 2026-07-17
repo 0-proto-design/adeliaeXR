@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="動画管理システム adeliaeXR Distributor の同期設定画面。管理PCに登録されている動画を選択し、現場機器と同期します。">
+  <title>同期設定 | adeliaeXR Distributor</title>
+  
+  <!-- CSS定義のインポート -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- 共通Web Components定義のインポート -->
+  <script src="js/components/app-header.js" defer></script>
+  
+  <!-- メインアプリケーションロジック -->
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- 共通ヘッダーコンポーネント (ページロード時にタイトルを動的に書き換えます) -->
+    <app-header active-tab="monitoring" alert-count="1" page-title="1号棟 - 同期設定" breadcrumbs='[{"name": "設置現場 監視", "url": "index.html"}, {"name": "1号棟 - 詳細 / 設定", "url": "manage.html?id=1"}, {"name": "同期設定"}]' building-id="1"></app-header>
+    
+    <!-- メインコンテンツエリア -->
+    <main class="main-content">
+      <!-- 上部フィルターバー -->
+      <div class="config-bar" style="justify-content: flex-start; gap: 24px;">
+        
+        
+        <!-- カテゴリ選択フィルタ -->
+        <div class="config-item">
+          <span class="config-label">カテゴリ:</span>
+          <select class="config-select" id="syncCategoryFilter">
+            <option value="all">全体</option>
+            <!-- 他のカテゴリは js/app.js から動的に生成されます -->
+          </select>
+        </div>
+      </div>
+
+      <!-- 左右スプリットパネル -->
+      <div class="sync-panels-wrapper">
+        <!-- 左側：管理PC（シアン枠） -->
+        <div class="sync-panel panel-pc">
+          <div class="panel-header-title">全体コンテンツ（管理 PC）</div>
+          
+          <!-- PC側動画カテゴリコンテナ -->
+          <div id="pcMoviesContainer" style="display: flex; flex-direction: column; gap: 24px; margin-top: 10px;">
+            <!-- js/app.js から描画されます -->
+          </div>
+
+          <div class="panel-footer-note">
+            ✓ = 同期済み（選択中） クリックで選択 / 解除
+          </div>
+        </div>
+
+        <!-- 右側：号棟側（グリーン枠） -->
+        <div class="sync-panel panel-device" id="devicePanel">
+          <div class="panel-header-title" id="devicePanelTitle">1号棟 コンテンツ一覧</div>
+          
+          <!-- 機器側動画カテゴリコンテナ -->
+          <div id="deviceMoviesContainer" style="display: flex; flex-direction: column; gap: 24px; margin-top: 10px;">
+            <!-- js/app.js から描画されます -->
+          </div>
+
+          <div class="panel-footer-note" style="color: var(--color-status-green);">
+            ← 左パネルの選択状態と同期結果が一致します
+          </div>
+        </div>
+      </div>
+
+      <!-- 下部同期実行ボタン -->
+      <div class="sync-execute-container">
+        <button class="sync-execute-btn" id="syncExecuteBtn">同期 実行</button>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

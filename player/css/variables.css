@@ -1,0 +1,40 @@
+:root {
+  /* カラーテーマ */
+  --bg-color-main: #0d0e12;       /* システム全体の背景（ニュートラルなダークグレー） */
+  --bg-color-card: #171921;       /* カード等のコンポーネント背景 */
+  --bg-color-card-error: #1e1014; /* エラーカードの背景（僅かに赤みを帯びたダークグレー） */
+  --bg-color-camera: #08090d;     /* 監視カメラプレビュー枠の背景 */
+  
+  /* アクセントカラー */
+  --color-cyan: #00d2ff;          /* シアン（メインの枠線、ボタン、強調テキスト） */
+  --color-cyan-glow: rgba(0, 210, 255, 0.4);
+  --color-cyan-hover: #00a4cc;
+  --color-cyan-bg: rgba(0, 210, 255, 0.08);
+  --color-cyan-active: #008cb0;
+  
+  /* ステータスカラー */
+  --color-status-green: #00e676;  /* 正常稼働中（グリーン） */
+  --color-status-green-bg: rgba(0, 230, 118, 0.15);
+  
+  --color-status-red: #ff4d4d;    /* 通信エラー（レッド） */
+  --color-status-red-bg: rgba(255, 77, 77, 0.15);
+  --color-status-red-border: #ff3333;
+  
+  /* テキストカラー */
+  --text-color-primary: #ffffff;  /* プライマリテキスト（白） */
+  --text-color-secondary: #929aa6;/* セカンダリテキスト（ニュートラルグレー） */
+  --text-color-cyan: #00d2ff;     /* シアンテキスト */
+  --text-color-orange: #ff9800;   /* オレンジ（注記など） */
+  
+  /* 共通スタイル */
+  --border-radius-large: 12px;
+  --border-radius-medium: 6px;
+  --border-radius-small: 4px;
+  
+  --border-cyan-thin: 1px solid rgba(0, 210, 255, 0.3);
+  --border-cyan-medium: 2px solid #00d2ff;
+  
+  /* フォント */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-monospace: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+}

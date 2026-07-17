@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="動画管理システム adeliaeXR Distributor の待機中動画設定画面。">
+  <title>待機中動画 | adeliaeXR Distributor</title>
+  
+  <!-- CSS定義のインポート -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- 共通Web Components定義のインポート -->
+  <script src="js/components/app-header.js" defer></script>
+  
+  <!-- メインアプリケーションロジック -->
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- 共通ヘッダー -->
+    <app-header active-tab="monitoring" alert-count="1" page-title="1号棟 - 待機中動画" breadcrumbs='[{"name": "設置現場 監視", "url": "index.html"}, {"name": "1号棟 - 詳細 / 設定", "url": "manage.html?id=1"}, {"name": "待機中動画"}]' building-id="1"></app-header>
+    
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+      <!-- 余白調整のためのスペースのみ残す、または削除 -->
+
+      <!-- 左右2カラムレイアウト -->
+      <div class="autoplay-columns-wrapper">
+        
+        <!-- 左側：待機時間設定 -->
+        <div class="autoplay-panel">
+          <div class="autoplay-title">待機時間設定</div>
+          <div class="autoplay-desc">自動再生が開始されるまでの待機時間を設定します</div>
+
+          <!-- 待機時間調整 -->
+          <div class="autoplay-setting-item" style="margin-top: 10px;">
+            <span class="autoplay-setting-label">待機時間</span>
+            <div class="wait-time-control">
+              <div class="wait-time-input-wrapper">
+                <input type="text" class="wait-time-input" id="waitTimeInput" value="30" readonly>
+                <span class="wait-time-unit">分</span>
+              </div>
+              <div class="spin-buttons">
+                <button class="spin-btn" id="spinUpBtn">▲</button>
+                <button class="spin-btn" id="spinDownBtn">▼</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- プリセット -->
+          <div class="autoplay-setting-item">
+            <span class="autoplay-setting-label" style="align-self: flex-start; margin-top: 8px;">プリセット:</span>
+            <div class="presets-grid">
+              <button class="preset-btn" data-value="10">10分</button>
+              <button class="preset-btn active" data-value="30">30分</button>
+              <button class="preset-btn" data-value="60">60分</button>
+              <button class="preset-btn" data-value="120">120分</button>
+            </div>
+          </div>
+
+          <!-- 自動再生スイッチ -->
+          <div class="autoplay-setting-item" style="border-top: 1px solid rgba(143, 160, 192, 0.1); padding-top: 20px;">
+            <span class="autoplay-setting-label">自動再生</span>
+            <div class="toggle-switch-wrapper">
+              <div class="toggle-switch on" id="autoplayToggle">
+                <div class="toggle-handle"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size: 13px; color: #ff8a65; margin-top: -10px;">
+            ※ 待機時間経過後、選択動画を順番に自動再生します
+          </div>
+
+          <!-- 確定ボタン -->
+          <button class="btn btn-primary" id="saveAutoplayBtn" style="width: 100%; padding: 16px; font-size: 16px; font-weight: bold; border: none; border-radius: var(--border-radius-medium); margin-top: 10px;">
+            設定を確定
+          </button>
+        </div>
+
+        <!-- 右側：再生動画スロット -->
+        <div class="autoplay-panel">
+          <div class="autoplay-title" id="slotsPanelTitle">再生動画 （1～5件）</div>
+          <div class="autoplay-desc">順番が再生順になります　空のスロットをクリック → 動画を選択</div>
+
+          <div class="slots-container" id="slotsContainer">
+            <!-- js/app.js からスロットが動的描画されます -->
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- 動画選択モーダル（空スロットクリック時に立ち上がる大型ポップアップ） -->
+    <div class="video-select-modal" id="videoSelectModal">
+      <!-- 暗幕 -->
+      <div class="popup-overlay" id="modalOverlay"></div>
+      <div class="video-select-wrapper">
+        <!-- ヘッダー: タイトル + 閉じるボタン -->
+        <div class="video-select-header">
+          <div class="video-select-title" id="modalTitle">コンテンツを選択　（スロット 1 に追加）</div>
+          <button class="vmodal-close-btn" id="modalCloseBtn">&times;</button>
+        </div>
+        <!-- カテゴリタブ -->
+        <div class="vmodal-tabs" id="modalCategoryTabs">
+          <!-- js/app.js から動的生成 -->
+        </div>
+        <!-- 動画グリッド -->
+        <div class="vmodal-grid" id="modalVideoGrid">
+          <!-- js/app.js から動的生成 -->
+        </div>
+        <!-- フッター: ヒントテキスト + キャンセルボタン -->
+        <div class="vmodal-footer">
+          <span class="vmodal-hint" id="modalHint">サムネをクリックして選択 → スロット 1 に追加されます</span>
+          <button class="btn btn-secondary vmodal-cancel-btn" id="modalCancelBtn">キャンセル</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,1184 @@
+document.addEventListener('DOMContentLoaded', () => {
+  // --- 現場名の動的適用処理 ---
+  const applyBuildingNames = (selectEl) => {
+    if (!selectEl) return;
+    Array.from(selectEl.options).forEach(opt => {
+      const storedName = localStorage.getItem(`adeliae_building_name_${opt.value}`);
+      if (storedName) {
+        opt.textContent = storedName;
+      }
+    });
+  };
+
+  // すべての画面で存在するセレクトボックスに名前を適用
+  const allSelects = ['buildingSelect', 'syncBuildingSelect', 'autoplayBuildingSelect'];
+  allSelects.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) applyBuildingNames(el);
+  });
+
+  // --- 設置現場監視画面用 (detail-popup 制御 -> 専用画面への遷移に変更) ---
+  const popup = document.querySelector('detail-popup');
+
+  // 各号棟カードから詳細クリックを受け取る
+  document.addEventListener('detail-click', (e) => {
+    const data = e.detail;
+    // ポップアップを開くのではなく、詳細管理専用ページへ遷移させる
+    window.location.href = `manage.html?id=${data.id}`;
+  });
+
+  // 各号棟カードからカメラプレビュー拡大クリックを受け取る
+  const cameraZoomPopup = document.querySelector('camera-zoom-popup');
+  document.addEventListener('camera-zoom-click', (e) => {
+    const data = e.detail;
+    if (cameraZoomPopup) {
+      cameraZoomPopup.open(data.id, data.name);
+    }
+  });
+
+  // --- 全体動画管理画面用 (カテゴリ・動画 登録・管理・編集 制御) ---
+  const addCategoryBtn = document.getElementById('addCategoryBtn');
+  const newRegisterBtn = document.getElementById('newRegisterBtn');
+  const categoryPopup = document.querySelector('category-popup');
+  const registerPopup = document.querySelector('register-popup');
+  const movieDetailPopup = document.querySelector('movie-detail-popup');
+  
+  // --- 詳細管理専用画面用 (設定・プレイリスト 制御) ---
+  const buildingSelect = document.getElementById('buildingSelect');
+  const syncBtn = document.getElementById('syncBtn');
+  const autoPlayBtn = document.getElementById('autoPlayBtn');
+  const logoSelectBtn = document.getElementById('logoSelectBtn');
+  const colorPickerBtn = document.getElementById('colorPickerBtn');
+
+  // --- 同期設定画面用 (左右連動 制御) ---
+  const syncBuildingSelect = document.getElementById('syncBuildingSelect');
+  const syncCategoryFilter = document.getElementById('syncCategoryFilter');
+  const pcMoviesContainer = document.getElementById('pcMoviesContainer');
+  const deviceMoviesContainer = document.getElementById('deviceMoviesContainer');
+  const syncExecuteBtn = document.getElementById('syncExecuteBtn');
+  const devicePanelTitle = document.getElementById('devicePanelTitle');
+
+  // --- 自動再生設定画面用 (autoplay.html) の描画・制御ロジック ---
+  const autoplayBuildingSelect = document.getElementById('autoplayBuildingSelect');
+  const backToManageBtn = document.getElementById('backToManageBtn');
+  const waitTimeInput = document.getElementById('waitTimeInput');
+  const spinUpBtn = document.getElementById('spinUpBtn');
+  const spinDownBtn = document.getElementById('spinDownBtn');
+  const autoplayToggle = document.getElementById('autoplayToggle');
+  const saveAutoplayBtn = document.getElementById('saveAutoplayBtn');
+  const slotsContainer = document.getElementById('slotsContainer');
+  const slotsPanelTitle = document.getElementById('slotsPanelTitle');
+
+  // モーダル系
+  const videoSelectModal = document.getElementById('videoSelectModal');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalVideoList = document.getElementById('modalVideoList');
+
+  const mainContent = document.querySelector('.main-content');
+
+  // デフォルトデータ定義
+  const defaultCategories = [
+    {
+      id: 'cat_nature',
+      name: '自然 / 海洋',
+      movies: [
+        { id: 'm1', title: '海中探訪 vol.1', desc: '神秘的な海中の中をゆっくりと探検するヒーリング映像。', type: 'mp4' },
+        { id: 'm2', title: '深海の神秘', desc: '光の届かない深海に生息する珍しい生物たちの生態に迫る。', type: 'mp4' },
+        { id: 'm3', title: '珊瑚礁の世界', desc: '色鮮やかな美しいサンゴ礁と、そこに群がる熱帯魚たち。', type: 'mp4' },
+        { id: 'm4', title: '極地の氷海', desc: '氷山が浮かぶ凍てつく海と、その周辺でたくましく生きる動物たち。', type: 'mp4' }
+      ]
+    },
+    {
+      id: 'cat_space',
+      name: '宇宙',
+      movies: [
+        { id: 'm5', title: '宇宙遊泳体験', desc: '国際宇宙ステーションから外に出て地球を眺めるかのような体験映像。', type: 'mp4' },
+        { id: 'm6', title: '銀河の旅', desc: '遥か遠くの星雲や他の銀河へ向かって飛び去っていくSF調CG。', type: 'mp4' },
+        { id: 'm7', title: '太陽系の神秘', desc: '太陽を中心に、水星から海王星までの各惑星をクローズアップ。', type: 'mp4' },
+        { id: 'm8', title: 'ブラックホール深淵', desc: '光すら逃げ出せない宇宙の重力深淵ブラックホールのシミュレーション。', type: 'mp4' }
+      ]
+    }
+  ];
+
+  // ローカルストレージまたはデフォルトからカテゴリデータを取得
+  let categories = JSON.parse(localStorage.getItem('adeliae_categories'));
+  if (!categories) {
+    categories = defaultCategories;
+    localStorage.setItem('adeliae_categories', JSON.stringify(categories));
+  }
+
+  // ==========================================
+  // 【A】全体動画管理画面 (movies.html) の描画ロジック
+  // ==========================================
+  if (addCategoryBtn && categoryPopup && mainContent && !buildingSelect && !syncBuildingSelect && !autoplayBuildingSelect) {
+    let activeCategoryFilter = 'all';
+
+    const renderCategories = () => {
+      const existingSections = mainContent.querySelectorAll('.movie-category-section');
+      existingSections.forEach(sec => sec.remove());
+      const existingTabs = mainContent.querySelector('.content-tabs');
+      if (existingTabs) existingTabs.remove();
+      const existingEmpty = mainContent.querySelector('.empty-state');
+      if (existingEmpty) existingEmpty.remove();
+
+      if (categories.length === 0) {
+        const noCategoryMessage = document.createElement('div');
+        noCategoryMessage.className = 'movie-category-section empty-state';
+        noCategoryMessage.style.cssText = 'text-align: center; padding: 40px; color: var(--text-color-secondary); font-size: 15px;';
+        noCategoryMessage.innerHTML = 'カテゴリが登録されていません。上の「カテゴリ編集」ボタンから登録してください。';
+        mainContent.appendChild(noCategoryMessage);
+        return;
+      }
+
+      if (activeCategoryFilter !== 'all' && !categories.some(c => c.id === activeCategoryFilter)) {
+        activeCategoryFilter = 'all';
+      }
+
+      const tabsContainer = document.createElement('div');
+      tabsContainer.className = 'content-tabs';
+
+      const allTab = document.createElement('button');
+      allTab.className = `content-tab-btn ${activeCategoryFilter === 'all' ? 'active' : ''}`;
+      allTab.textContent = '全て';
+      allTab.addEventListener('click', () => {
+        activeCategoryFilter = 'all';
+        renderCategories();
+      });
+      tabsContainer.appendChild(allTab);
+
+      categories.forEach(cat => {
+        const tab = document.createElement('button');
+        tab.className = `content-tab-btn ${activeCategoryFilter === cat.id ? 'active' : ''}`;
+        tab.textContent = cat.name;
+        tab.addEventListener('click', () => {
+          activeCategoryFilter = cat.id;
+          renderCategories();
+        });
+        tabsContainer.appendChild(tab);
+      });
+
+      const actionBar = mainContent.querySelector('.action-bar');
+      if (actionBar) {
+        actionBar.after(tabsContainer);
+      } else {
+        mainContent.insertBefore(tabsContainer, mainContent.firstChild);
+      }
+
+      const categoriesToRender = activeCategoryFilter === 'all'
+        ? categories
+        : categories.filter(c => c.id === activeCategoryFilter);
+
+      categoriesToRender.forEach(cat => {
+        const section = document.createElement('section');
+        section.className = 'movie-category-section';
+        section.id = cat.id;
+
+        const moviesHTML = (cat.movies || []).map(movie => `
+          <div class="movie-card" data-id="${movie.id}" style="cursor: pointer;">
+            <div class="movie-thumbnail">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(143, 160, 192, 0.4);">
+                <polygon points="23 7 16 12 23 17 23 7"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </div>
+            <div class="movie-info">
+              <span class="movie-title">${movie.title}</span>
+            </div>
+          </div>
+        `).join('');
+
+        section.innerHTML = `
+          <h2 class="category-title">${cat.name}</h2>
+          <div class="movies-grid">
+            ${moviesHTML || '<div class="empty-list" style="grid-column: span 4; text-align: center; color: var(--text-color-secondary); padding: 20px; font-size: 15px;">このカテゴリに動画は登録されていません。</div>'}
+          </div>
+        `;
+        mainContent.appendChild(section);
+      });
+
+      const movieCards = mainContent.querySelectorAll('.movie-card');
+      movieCards.forEach(card => {
+        card.addEventListener('click', () => {
+          const movieId = card.getAttribute('data-id');
+          let targetMovie = null;
+          categories.forEach(cat => {
+            const m = (cat.movies || []).find(x => x.id === movieId);
+            if (m) {
+              targetMovie = { ...m, categoryId: cat.id };
+            }
+          });
+
+          if (targetMovie && movieDetailPopup) {
+            movieDetailPopup.open(targetMovie, categories);
+          }
+        });
+      });
+    };
+
+    renderCategories();
+
+    addCategoryBtn.addEventListener('click', () => {
+      categoryPopup.open(categories);
+    });
+
+    if (newRegisterBtn && registerPopup) {
+      newRegisterBtn.addEventListener('click', () => {
+        registerPopup.open(categories);
+      });
+
+      document.addEventListener('movie-register', (e) => {
+        const { title, desc, type, categoryId } = e.detail;
+
+        const targetCategory = categories.find(cat => cat.id === categoryId);
+        if (targetCategory) {
+          if (!targetCategory.movies) {
+            targetCategory.movies = [];
+          }
+          const newMovie = {
+            id: 'm_' + Date.now(),
+            title: title,
+            desc: desc,
+            type: type
+          };
+          targetCategory.movies.push(newMovie);
+
+          localStorage.setItem('adeliae_categories', JSON.stringify(categories));
+          renderCategories();
+        }
+      });
+    }
+
+    document.addEventListener('movie-update', (e) => {
+      const { movieId, title, desc, type, categoryId } = e.detail;
+
+      let oldCategory = null;
+      let targetMovieIndex = -1;
+      let targetMovieObj = null;
+
+      categories.forEach(cat => {
+        const idx = (cat.movies || []).findIndex(m => m.id === movieId);
+        if (idx !== -1) {
+          oldCategory = cat;
+          targetMovieIndex = idx;
+          targetMovieObj = cat.movies[idx];
+        }
+      });
+
+      if (targetMovieObj) {
+        targetMovieObj.title = title;
+        targetMovieObj.desc = desc;
+        targetMovieObj.type = type;
+
+        if (oldCategory.id !== categoryId) {
+          oldCategory.movies.splice(targetMovieIndex, 1);
+          const newCategory = categories.find(cat => cat.id === categoryId);
+          if (newCategory) {
+            if (!newCategory.movies) newCategory.movies = [];
+            targetMovieObj.categoryId = categoryId;
+            newCategory.movies.push(targetMovieObj);
+          }
+        }
+
+        localStorage.setItem('adeliae_categories', JSON.stringify(categories));
+        renderCategories();
+      }
+    });
+
+    document.addEventListener('movie-delete', (e) => {
+      const { movieId } = e.detail;
+
+      categories.forEach(cat => {
+        const idx = (cat.movies || []).findIndex(m => m.id === movieId);
+        if (idx !== -1) {
+          cat.movies.splice(idx, 1);
+        }
+      });
+
+      localStorage.setItem('adeliae_categories', JSON.stringify(categories));
+      renderCategories();
+    });
+
+    document.addEventListener('category-save', (e) => {
+      const updatedCategories = e.detail.categories;
+
+      const activeMovieIds = new Set();
+      updatedCategories.forEach(cat => {
+        (cat.movies || []).forEach(m => activeMovieIds.add(m.id));
+      });
+
+      const rescuedMovies = [];
+      categories.forEach(oldCat => {
+        (oldCat.movies || []).forEach(m => {
+          if (!activeMovieIds.has(m.id)) {
+            rescuedMovies.push(m);
+          }
+        });
+      });
+
+      if (rescuedMovies.length > 0 && updatedCategories.length > 0) {
+        updatedCategories[0].movies = [...(updatedCategories[0].movies || []), ...rescuedMovies];
+      }
+
+      categories = updatedCategories;
+      localStorage.setItem('adeliae_categories', JSON.stringify(categories));
+      renderCategories();
+    });
+  }
+
+  // ==========================================
+  // 【B】詳細管理専用画面 (manage.html) の描画ロジック
+  // ==========================================
+  const editBuildingNameBtn = document.getElementById('editBuildingNameBtn');
+  if (editBuildingNameBtn && mainContent && !syncBuildingSelect && !autoplayBuildingSelect) {
+    const appHeader = document.querySelector('app-header');
+
+    // URLのパラメータから棟IDを取得
+    const urlParams = new URLSearchParams(window.location.search);
+    const buildingId = urlParams.get('id') || '1';
+
+    // ヘッダーに棟IDを設定
+    if (appHeader) {
+      appHeader.setAttribute('building-id', buildingId);
+    }
+
+    // ヘッダータイトルの動的書き換え
+    const updateHeaderTitle = () => {
+      if (appHeader) {
+        let defaultName = `${buildingId}号棟`;
+        const name = localStorage.getItem(`adeliae_building_name_${buildingId}`) || defaultName;
+        appHeader.setAttribute('page-title', `${name} - 詳細 / 設定`);
+        appHeader.setAttribute('breadcrumbs', JSON.stringify([
+          { name: '設置現場 監視', url: 'index.html' },
+          { name: `${name} - 詳細 / 設定` }
+        ]));
+      }
+    };
+    updateHeaderTitle();
+
+    // --- 現場名編集機能のバインド ---
+    const buildingNameDisplay = document.getElementById('buildingNameDisplay');
+    const buildingNameModal = document.getElementById('buildingNameModal');
+    const nameModalCloseBtn = document.getElementById('nameModalCloseBtn');
+    const nameModalCancelBtn = document.getElementById('nameModalCancelBtn');
+    const nameModalOverlay = document.getElementById('nameModalOverlay');
+    const saveBuildingNameBtn = document.getElementById('saveBuildingNameBtn');
+    const newBuildingNameInput = document.getElementById('newBuildingNameInput');
+
+    const updateBuildingNameDisplay = () => {
+      const defaultName = `${buildingId}号棟`;
+      const name = localStorage.getItem(`adeliae_building_name_${buildingId}`) || defaultName;
+      if (buildingNameDisplay) {
+        buildingNameDisplay.textContent = name;
+      }
+    };
+    updateBuildingNameDisplay();
+
+    if (editBuildingNameBtn && buildingNameModal) {
+      editBuildingNameBtn.addEventListener('click', () => {
+        const defaultName = `${buildingId}号棟`;
+        const currentName = localStorage.getItem(`adeliae_building_name_${buildingId}`) || defaultName;
+        if (newBuildingNameInput) {
+          newBuildingNameInput.value = currentName;
+        }
+        buildingNameModal.style.display = 'block';
+      });
+    }
+
+    const closeNameModal = () => {
+      if (buildingNameModal) buildingNameModal.style.display = 'none';
+    };
+
+    if (nameModalCloseBtn) nameModalCloseBtn.addEventListener('click', closeNameModal);
+    if (nameModalCancelBtn) nameModalCancelBtn.addEventListener('click', closeNameModal);
+    if (nameModalOverlay) nameModalOverlay.addEventListener('click', closeNameModal);
+
+    if (saveBuildingNameBtn && newBuildingNameInput) {
+      saveBuildingNameBtn.addEventListener('click', () => {
+        const newName = newBuildingNameInput.value.trim();
+        if (newName) {
+          localStorage.setItem(`adeliae_building_name_${buildingId}`, newName);
+          
+          // 表示更新
+          updateBuildingNameDisplay();
+          
+          // ヘッダータイトル・パンくず・セレクトボックスの更新
+          if (appHeader) {
+            appHeader.setAttribute('building-id', buildingId);
+          }
+          updateHeaderTitle();
+          
+          closeNameModal();
+        } else {
+          alert('有効な名前を入力してください。');
+        }
+      });
+    }
+
+    // 詳細管理用プレイリスト/カテゴリの動的描画関数
+    let activeManageCategoryFilter = 'all';
+
+    // 詳細管理用プレイリスト/カテゴリの動的描画関数
+    const renderManageCategories = () => {
+      const existingSections = mainContent.querySelectorAll('.movie-category-section');
+      existingSections.forEach(sec => sec.remove());
+      const existingTabs = mainContent.querySelector('.content-tabs');
+      if (existingTabs) existingTabs.remove();
+      const existingEmpty = mainContent.querySelector('.empty-state');
+      if (existingEmpty) existingEmpty.remove();
+
+      if (categories.length === 0) {
+        const noCategoryMessage = document.createElement('div');
+        noCategoryMessage.className = 'movie-category-section empty-state';
+        noCategoryMessage.style.cssText = 'text-align: center; padding: 40px; color: var(--text-color-secondary); font-size: 15px;';
+        noCategoryMessage.innerHTML = '登録されている動画カテゴリがありません。';
+        mainContent.appendChild(noCategoryMessage);
+        return;
+      }
+
+      if (activeManageCategoryFilter !== 'all' && !categories.some(c => c.id === activeManageCategoryFilter)) {
+        activeManageCategoryFilter = 'all';
+      }
+
+      const tabsContainer = document.createElement('div');
+      tabsContainer.className = 'content-tabs';
+
+      const allTab = document.createElement('button');
+      allTab.className = `content-tab-btn ${activeManageCategoryFilter === 'all' ? 'active' : ''}`;
+      allTab.textContent = '全て';
+      allTab.addEventListener('click', () => {
+        activeManageCategoryFilter = 'all';
+        renderManageCategories();
+      });
+      tabsContainer.appendChild(allTab);
+
+      categories.forEach(cat => {
+        const tab = document.createElement('button');
+        tab.className = `content-tab-btn ${activeManageCategoryFilter === cat.id ? 'active' : ''}`;
+        tab.textContent = cat.name;
+        tab.addEventListener('click', () => {
+          activeManageCategoryFilter = cat.id;
+          renderManageCategories();
+        });
+        tabsContainer.appendChild(tab);
+      });
+
+      const configBar = mainContent.querySelector('.config-bar');
+      if (configBar) {
+        configBar.after(tabsContainer);
+      } else {
+        mainContent.insertBefore(tabsContainer, mainContent.firstChild);
+      }
+
+      const categoriesToRender = activeManageCategoryFilter === 'all'
+        ? categories
+        : categories.filter(c => c.id === activeManageCategoryFilter);
+
+      categoriesToRender.forEach(cat => {
+        const section = document.createElement('section');
+        section.className = 'movie-category-section';
+        section.id = cat.id;
+
+        const moviesHTML = (cat.movies || []).map(movie => `
+          <div class="movie-card" data-id="${movie.id}" style="cursor: pointer;">
+            <div class="movie-thumbnail">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(143, 160, 192, 0.4);">
+                <polygon points="23 7 16 12 23 17 23 7"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </div>
+            <div class="movie-info">
+              <span class="movie-title">${movie.title}</span>
+            </div>
+          </div>
+        `).join('');
+
+        section.innerHTML = `
+          <h2 class="category-title">${cat.name}</h2>
+          <div class="movies-grid">
+            ${moviesHTML || '<div class="empty-list" style="grid-column: span 4; text-align: center; color: var(--text-color-secondary); padding: 20px; font-size: 15px;">このカテゴリに動画は登録されていません。</div>'}
+          </div>
+        `;
+        mainContent.appendChild(section);
+      });
+
+      const manageCards = mainContent.querySelectorAll('.movie-card');
+      manageCards.forEach(card => {
+        card.addEventListener('click', () => {
+          const movieId = card.getAttribute('data-id');
+          let selectedMovie = null;
+          categories.forEach(cat => {
+            const m = (cat.movies || []).find(x => x.id === movieId);
+            if (m) selectedMovie = m;
+          });
+
+          if (selectedMovie) {
+            manageCards.forEach(c => {
+              c.style.borderColor = '';
+              c.style.boxShadow = '';
+            });
+            card.style.borderColor = 'var(--color-cyan)';
+            card.style.boxShadow = '0 0 12px var(--color-cyan-glow)';
+          }
+        });
+      });
+    };
+
+    renderManageCategories();
+
+    if (syncBtn) {
+      syncBtn.addEventListener('click', () => {
+        window.location.href = `sync.html?id=${buildingId}`;
+      });
+    }
+
+    if (autoPlayBtn) {
+      autoPlayBtn.addEventListener('click', () => {
+        window.location.href = `autoplay.html?id=${buildingId}`;
+      });
+    }
+
+
+
+    if (logoSelectBtn) {
+      const logoModal = document.getElementById('logoChangeModal');
+      const logoModalCloseBtn = document.getElementById('logoModalCloseBtn');
+      const logoModalCancelBtn = document.getElementById('logoModalCancelBtn');
+      const logoModalOverlay = document.getElementById('logoModalOverlay');
+      const logoUploadBtn = document.getElementById('logoUploadBtn');
+      const logoUploadInput = document.getElementById('logoUploadInput');
+      const logoModalThumbnailImg = document.getElementById('logoModalThumbnailImg');
+      const logoModalThumbnailText = document.getElementById('logoModalThumbnailText');
+      const saveLogoBtn = document.getElementById('saveLogoBtn');
+      const logoRemoveBtn = document.getElementById('logoRemoveBtn');
+      const configLogoPreview = document.querySelector('.config-logo-preview');
+
+      logoSelectBtn.addEventListener('click', () => {
+        if (logoModal) {
+          logoModal.style.display = 'block';
+        }
+      });
+
+      const closeLogoModal = () => {
+        if (logoModal) logoModal.style.display = 'none';
+      };
+
+      if (logoModalCloseBtn) logoModalCloseBtn.addEventListener('click', closeLogoModal);
+      if (logoModalCancelBtn) logoModalCancelBtn.addEventListener('click', closeLogoModal);
+      if (logoModalOverlay) logoModalOverlay.addEventListener('click', closeLogoModal);
+
+      if (logoUploadBtn && logoUploadInput) {
+        logoUploadBtn.addEventListener('click', () => {
+          logoUploadInput.click();
+        });
+        
+        logoUploadInput.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+              logoModalThumbnailImg.src = evt.target.result;
+              logoModalThumbnailImg.style.display = 'block';
+              logoModalThumbnailText.style.display = 'none';
+            };
+            reader.readAsDataURL(e.target.files[0]);
+          }
+        });
+      }
+
+      if (logoRemoveBtn) {
+        logoRemoveBtn.addEventListener('click', () => {
+          logoModalThumbnailImg.removeAttribute('src');
+          logoModalThumbnailImg.style.display = 'none';
+          logoModalThumbnailText.style.display = 'block';
+          if (logoUploadInput) logoUploadInput.value = '';
+        });
+      }
+
+      if (saveLogoBtn) {
+        saveLogoBtn.addEventListener('click', () => {
+          if (logoModalThumbnailImg && logoModalThumbnailImg.hasAttribute('src') && logoModalThumbnailImg.src) {
+            configLogoPreview.innerHTML = `<img src="${logoModalThumbnailImg.src}" style="height: 100%; width: auto; object-fit: contain;">`;
+          } else {
+            configLogoPreview.innerHTML = 'ロゴ';
+          }
+          closeLogoModal();
+        });
+      }
+    }
+
+    if (colorPickerBtn) {
+      const themeColorModal = document.getElementById('themeColorModal');
+      const colorModalCloseBtn = document.getElementById('colorModalCloseBtn');
+      const colorModalCancelBtn = document.getElementById('colorModalCancelBtn');
+      const colorModalOverlay = document.getElementById('colorModalOverlay');
+      const saveColorBtn = document.getElementById('saveColorBtn');
+      
+      const colorPresetBtns = document.querySelectorAll('#colorPresetGrid .color-preset-btn');
+      const customColorPresetBtn = document.getElementById('customColorPresetBtn');
+      const customColorInput = document.getElementById('customColorInput');
+      
+      let selectedColor = '#00d2ff';
+
+      colorPickerBtn.addEventListener('click', () => {
+        if (themeColorModal) themeColorModal.style.display = 'block';
+      });
+
+      const closeColorModal = () => {
+        if (themeColorModal) themeColorModal.style.display = 'none';
+      };
+
+      if (colorModalCloseBtn) colorModalCloseBtn.addEventListener('click', closeColorModal);
+      if (colorModalCancelBtn) colorModalCancelBtn.addEventListener('click', closeColorModal);
+      if (colorModalOverlay) colorModalOverlay.addEventListener('click', closeColorModal);
+
+      colorPresetBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          colorPresetBtns.forEach(b => b.classList.remove('selected'));
+          if (customColorPresetBtn) customColorPresetBtn.classList.remove('selected');
+          
+          e.currentTarget.classList.add('selected');
+          selectedColor = e.currentTarget.getAttribute('data-color');
+          if (customColorInput) customColorInput.value = selectedColor;
+        });
+      });
+
+      if (customColorInput && customColorPresetBtn) {
+        customColorInput.addEventListener('input', (e) => {
+          colorPresetBtns.forEach(b => b.classList.remove('selected'));
+          customColorPresetBtn.classList.add('selected');
+          customColorPresetBtn.style.backgroundColor = e.target.value;
+          selectedColor = e.target.value;
+        });
+      }
+
+      if (saveColorBtn) {
+        saveColorBtn.addEventListener('click', () => {
+          colorPickerBtn.style.backgroundColor = selectedColor;
+          // 管理画面のテーマカラー（--color-cyan）は変更しない
+          closeColorModal();
+        });
+      }
+    }
+  }
+
+  // ==========================================
+  // 【C】同期設定専用画面 (sync.html) の描画・制御ロジック
+  // ==========================================
+  if (pcMoviesContainer && deviceMoviesContainer) {
+    const appHeader = document.querySelector('app-header');
+
+    // URLパラメータから棟IDを取得
+    const urlParams = new URLSearchParams(window.location.search);
+    const buildingId = urlParams.get('id') || '1';
+
+    // ヘッダーに棟IDを設定
+    if (appHeader) {
+      appHeader.setAttribute('building-id', buildingId);
+    }
+
+    let defaultName = `${buildingId}号棟`;
+    const name = localStorage.getItem(`adeliae_building_name_${buildingId}`) || defaultName;
+
+    // ヘッダータイトルの同期
+    if (appHeader) {
+      appHeader.setAttribute('page-title', `${name} - 同期設定`);
+      appHeader.setAttribute('breadcrumbs', JSON.stringify([
+        { name: '設置現場 監視', url: 'index.html' },
+        { name: `${name} - 詳細 / 設定`, url: `manage.html?id=${buildingId}` },
+        { name: '同期設定' }
+      ]));
+    }
+
+    if (devicePanelTitle) {
+      devicePanelTitle.textContent = `${name} コンテンツ一覧`;
+    }
+
+    // 選択された棟の同期対象動画IDリストをロード (なければデフォルト設定)
+    const storageKey = `adeliae_sync_ids_building_${buildingId}`;
+    let syncMovieIds = JSON.parse(localStorage.getItem(storageKey));
+    if (!syncMovieIds) {
+      syncMovieIds = ['m1', 'm3', 'm5'];
+      localStorage.setItem(storageKey, JSON.stringify(syncMovieIds));
+    }
+    // 初期ロード時の同期済みIDリストを退避
+    const originalSyncMovieIds = [...syncMovieIds];
+
+    // カテゴリフィルターオプションの動的生成
+    if (syncCategoryFilter) {
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.id;
+        opt.textContent = cat.name;
+        syncCategoryFilter.appendChild(opt);
+      });
+
+      // フィルター変更時に再レンダリング
+      syncCategoryFilter.addEventListener('change', () => {
+        renderSyncPanels();
+      });
+    }
+
+    // 左右パネルの動画レンダリング関数 (カテゴリ分け)
+    const renderSyncPanels = () => {
+      pcMoviesContainer.innerHTML = '';
+      deviceMoviesContainer.innerHTML = '';
+
+      const filterVal = syncCategoryFilter.value;
+
+      // 表示対象のカテゴリを集める
+      const filteredCategories = filterVal === 'all' 
+        ? categories 
+        : categories.filter(c => c.id === filterVal);
+
+      let pcCount = 0;
+      let deviceCount = 0;
+
+      filteredCategories.forEach(cat => {
+        const catMovies = cat.movies || [];
+        if (catMovies.length === 0) return;
+
+        // --- PC側カテゴリセクションの作成 ---
+        const pcSection = document.createElement('div');
+        pcSection.className = 'sync-cat-section';
+        pcSection.innerHTML = `
+          <h2 class="category-title" style="font-size: 15px; margin-bottom: 12px; margin-top: 6px;">${cat.name}</h2>
+          <div class="movies-grid" style="grid-template-columns: repeat(3, 1fr); gap: 16px;"></div>
+        `;
+        const pcGrid = pcSection.querySelector('.movies-grid');
+
+        // --- 機器側カテゴリセクションの作成 (仮作成しておき、同期対象があればアペンド) ---
+        const devSection = document.createElement('div');
+        devSection.className = 'sync-cat-section';
+        devSection.innerHTML = `
+          <h2 class="category-title" style="font-size: 15px; margin-bottom: 12px; margin-top: 6px;">${cat.name}</h2>
+          <div class="movies-grid" style="grid-template-columns: repeat(3, 1fr); gap: 16px;"></div>
+        `;
+        const devGrid = devSection.querySelector('.movies-grid');
+        let devSectionHasMovies = false;
+
+        catMovies.forEach(movie => {
+          const isSynced = syncMovieIds.includes(movie.id);
+
+          const isOriginalSynced = originalSyncMovieIds.includes(movie.id);
+
+          pcCount++;
+          const pcCard = document.createElement('div');
+          pcCard.className = `movie-card ${isSynced ? 'sync-selected' : ''}`;
+          pcCard.setAttribute('data-id', movie.id);
+          pcCard.style.cursor = 'pointer';
+          pcCard.style.position = 'relative';
+          pcCard.innerHTML = `
+            ${isOriginalSynced && isSynced ? '<div class="sync-status-badge">同期済み</div>' : ''}
+            <div class="sync-check-btn">✓</div>
+            <div class="movie-thumbnail">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(143, 160, 192, 0.4);">
+                <polygon points="23 7 16 12 23 17 23 7"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </div>
+            <div class="movie-info">
+              <span class="movie-title">${movie.title}</span>
+            </div>
+          `;
+
+          // 左カードクリックで同期対象トグル
+          pcCard.addEventListener('click', () => {
+            const idx = syncMovieIds.indexOf(movie.id);
+            if (idx === -1) {
+              syncMovieIds.push(movie.id);
+            } else {
+              syncMovieIds.splice(idx, 1);
+            }
+            localStorage.setItem(storageKey, JSON.stringify(syncMovieIds));
+            renderSyncPanels(); // 再描画
+          });
+
+          pcGrid.appendChild(pcCard);
+
+          // 2. 右パネル（号棟側）の動画カード生成
+          if (isSynced) {
+            deviceCount++;
+            devSectionHasMovies = true;
+            const devCard = document.createElement('div');
+            devCard.className = 'movie-card';
+            devCard.style.position = 'relative';
+            devCard.innerHTML = `
+              ${isOriginalSynced ? '<div class="sync-status-badge">同期済み</div>' : ''}
+              <div class="movie-thumbnail">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(143, 160, 192, 0.4);">
+                  <polygon points="23 7 16 12 23 17 23 7"/>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+              </div>
+              <div class="movie-info">
+                <span class="movie-title">${movie.title}</span>
+              </div>
+            `;
+            devGrid.appendChild(devCard);
+          }
+        });
+
+        // 構築したセクションをアペンド
+        pcMoviesContainer.appendChild(pcSection);
+        if (devSectionHasMovies) {
+          deviceMoviesContainer.appendChild(devSection);
+        }
+      });
+
+      // 空白状態の補足
+      if (pcCount === 0) {
+        pcMoviesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 40px;">表示する動画がありません。</div>';
+      }
+      if (deviceCount === 0) {
+        deviceMoviesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 40px;">同期対象の動画が選択されていません。</div>';
+      }
+    };
+
+    // 初期描画
+    renderSyncPanels();
+
+    // 同期実行ボタンクリック時のアニメーションモック演出
+    if (syncExecuteBtn) {
+      syncExecuteBtn.addEventListener('click', () => {
+        syncExecuteBtn.disabled = true;
+        syncExecuteBtn.style.opacity = '0.7';
+        
+        let counter = 3;
+        syncExecuteBtn.textContent = `同期中... (${counter}s)`;
+
+        const timer = setInterval(() => {
+          counter--;
+          if (counter > 0) {
+            syncExecuteBtn.textContent = `同期中... (${counter}s)`;
+          } else {
+            clearInterval(timer);
+            syncExecuteBtn.textContent = '同期完了！';
+            syncExecuteBtn.style.backgroundColor = 'var(--color-status-green)';
+            
+            // 同期完了したため、オリジナルリストを現在の最新リストで更新して再描画
+            originalSyncMovieIds.length = 0;
+            originalSyncMovieIds.push(...syncMovieIds);
+            renderSyncPanels();
+            
+            setTimeout(() => {
+              alert(`管理PCから ${selectedText} へのプレイリスト同期処理が正常に完了しました。`);
+              syncExecuteBtn.disabled = false;
+              syncExecuteBtn.style.opacity = '1';
+              syncExecuteBtn.textContent = '同期 実行';
+              syncExecuteBtn.style.backgroundColor = ''; // 背景色を元に戻す
+            }, 500);
+          }
+        }, 1000);
+      });
+    }
+  }
+
+  // ==========================================
+  // 【D】自動再生設定専用画面 (autoplay.html) の描画・制御ロジック
+  // ==========================================
+  if (waitTimeInput && slotsContainer) {
+    const appHeader = document.querySelector('app-header');
+
+    // URLパラメータから棟IDを取得
+    const urlParams = new URLSearchParams(window.location.search);
+    const buildingId = urlParams.get('id') || '1';
+
+    // ヘッダーに棟IDを設定
+    if (appHeader) {
+      appHeader.setAttribute('building-id', buildingId);
+    }
+
+    let defaultName = `${buildingId}号棟`;
+    const name = localStorage.getItem(`adeliae_building_name_${buildingId}`) || defaultName;
+
+    // ヘッダータイトルの同期
+    if (appHeader) {
+      appHeader.setAttribute('page-title', `${name} - 待機中動画`);
+      appHeader.setAttribute('breadcrumbs', JSON.stringify([
+        { name: '設置現場 監視', url: 'index.html' },
+        { name: `${name} - 詳細 / 設定`, url: `manage.html?id=${buildingId}` },
+        { name: '待機中動画' }
+      ]));
+    }
+
+    if (slotsPanelTitle) {
+      slotsPanelTitle.textContent = `再生動画 （1～5件）`;
+    }
+
+    // 「← 号棟管理へ戻る」ボタンのURL更新
+    if (backToManageBtn) {
+      backToManageBtn.setAttribute('href', `manage.html?id=${buildingId}`);
+    }
+
+    // データの読み込み
+    const storageKey = `adeliae_autoplay_config_building_${buildingId}`;
+    let config = JSON.parse(localStorage.getItem(storageKey));
+    if (!config) {
+      // デフォルト初期状態 (1: 海中探訪 vol.1, 2: 宇宙遊泳体験, 3: 珊瑚礁の世界, 4: 空, 5: 空)
+      config = {
+        waitTime: 30,
+        isEnabled: true,
+        videoIds: ['m1', 'm5', 'm3', null, null]
+      };
+      localStorage.setItem(storageKey, JSON.stringify(config));
+    }
+
+    // 初期UI反映
+    waitTimeInput.value = config.waitTime;
+    
+    if (config.isEnabled) {
+      autoplayToggle.classList.add('on');
+    } else {
+      autoplayToggle.classList.remove('on');
+    }
+
+    // プリセットのアクティブ化
+    const presetButtons = document.querySelectorAll('.preset-btn');
+    const updatePresetActive = (val) => {
+      presetButtons.forEach(btn => {
+        if (parseInt(btn.getAttribute('data-value')) === val) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    };
+    updatePresetActive(config.waitTime);
+
+    // プリセットボタンイベント
+    presetButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = parseInt(btn.getAttribute('data-value'));
+        config.waitTime = val;
+        waitTimeInput.value = val;
+        updatePresetActive(val);
+      });
+    });
+
+    // スピンボタン操作 (▲▼)
+    spinUpBtn.addEventListener('click', () => {
+      let val = parseInt(waitTimeInput.value) || 0;
+      if (val < 120) {
+        val++;
+        waitTimeInput.value = val;
+        config.waitTime = val;
+        updatePresetActive(val);
+      }
+    });
+
+    spinDownBtn.addEventListener('click', () => {
+      let val = parseInt(waitTimeInput.value) || 0;
+      if (val > 1) {
+        val--;
+        waitTimeInput.value = val;
+        config.waitTime = val;
+        updatePresetActive(val);
+      }
+    });
+
+    // トグルスイッチ操作
+    autoplayToggle.addEventListener('click', () => {
+      config.isEnabled = !config.isEnabled;
+      if (config.isEnabled) {
+        autoplayToggle.classList.add('on');
+      } else {
+        autoplayToggle.classList.remove('on');
+      }
+    });
+
+    // スロットの描画
+    const renderSlots = () => {
+      slotsContainer.innerHTML = '';
+      
+      for (let i = 0; i < 5; i++) {
+        const videoId = config.videoIds[i];
+        let foundMovie = null;
+        
+        if (videoId) {
+          // 全カテゴリから動画を検索
+          categories.forEach(cat => {
+            const m = (cat.movies || []).find(x => x.id === videoId);
+            if (m) foundMovie = m;
+          });
+        }
+
+        const slotCard = document.createElement('div');
+        
+        if (foundMovie) {
+          // 設定済みスロット
+          slotCard.className = 'slot-card active';
+          slotCard.innerHTML = `
+            <div class="slot-left-info">
+              <div class="slot-index">${i + 1}</div>
+              <div class="slot-thumb">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="23 7 16 12 23 17 23 7"/>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+              </div>
+              <div class="slot-title">${foundMovie.title}</div>
+            </div>
+            <button class="slot-btn btn-remove" data-index="${i}">&times;</button>
+          `;
+        } else {
+          // 空のスロット
+          slotCard.className = 'slot-card empty';
+          slotCard.innerHTML = `
+            <div class="slot-left-info">
+              <div class="slot-index">${i + 1}</div>
+              <div class="slot-thumb">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+              </div>
+              <div class="slot-placeholder">タップして選択</div>
+            </div>
+            <button class="slot-btn btn-add" data-index="${i}">＋</button>
+          `;
+        }
+
+        // イベントバインド: 空スロットクリックで選択モーダル表示
+        if (!foundMovie) {
+          slotCard.addEventListener('click', (e) => {
+            openSelectModal(i);
+          });
+        } else {
+          // 削除ボタンの挙動
+          const removeBtn = slotCard.querySelector('.btn-remove');
+          removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // バブリング防止
+            config.videoIds[i] = null;
+            renderSlots();
+          });
+        }
+
+        slotsContainer.appendChild(slotCard);
+      }
+    };
+
+    // 動画選択モーダルの起動
+    let activeSlotIndex = null;
+    const openSelectModal = (index) => {
+      activeSlotIndex = index;
+
+      // ヘッダータイトル・フッターヒントを更新
+      if (modalTitle) modalTitle.textContent = `コンテンツを選択　（スロット ${index + 1} に追加）`;
+      const modalHint = document.getElementById('modalHint');
+      if (modalHint) modalHint.textContent = `サムネをクリックして選択 → スロット ${index + 1} に追加されます`;
+
+      // すでに登録されている動画IDをリストアップして重複選択を防ぐ
+      const usedIds = config.videoIds.filter(id => id !== null);
+
+      // ---- カテゴリタブの生成 ----
+      const modalCategoryTabs = document.getElementById('modalCategoryTabs');
+      const modalVideoGrid = document.getElementById('modalVideoGrid');
+      if (!modalCategoryTabs || !modalVideoGrid) {
+        videoSelectModal.style.display = 'block';
+        return;
+      }
+
+      let activeTabId = 'all';
+
+      const renderModalGrid = (filterCatId) => {
+        modalVideoGrid.innerHTML = '';
+        const targetCategories = filterCatId === 'all'
+          ? categories
+          : categories.filter(c => c.id === filterCatId);
+
+        targetCategories.forEach(cat => {
+          (cat.movies || []).forEach(movie => {
+            const isUsed = usedIds.includes(movie.id);
+
+            const card = document.createElement('div');
+            card.className = `vmodal-movie-card ${isUsed ? 'used' : ''}`;
+            card.innerHTML = `
+              ${isUsed ? '<div class="vcard-used-badge">使用中</div>' : ''}
+              <div class="movie-thumbnail">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="23 7 16 12 23 17 23 7"/>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+              </div>
+              <div class="vcard-title">${movie.title}</div>
+            `;
+
+            if (!isUsed) {
+              card.addEventListener('click', () => {
+                config.videoIds[activeSlotIndex] = movie.id;
+                closeSelectModal();
+                renderSlots();
+              });
+            }
+
+            modalVideoGrid.appendChild(card);
+          });
+        });
+
+        // 空の場合
+        if (modalVideoGrid.children.length === 0) {
+          modalVideoGrid.innerHTML = '<div style="grid-column: span 4; text-align: center; color: var(--text-color-secondary); padding: 40px;">このカテゴリに動画がありません。</div>';
+        }
+      };
+
+      // タブを構築
+      modalCategoryTabs.innerHTML = '';
+
+      // 「全体」タブ
+      const allTab = document.createElement('button');
+      allTab.className = 'vmodal-tab-btn active';
+      allTab.textContent = '全体';
+      allTab.addEventListener('click', () => {
+        activeTabId = 'all';
+        modalCategoryTabs.querySelectorAll('.vmodal-tab-btn').forEach(b => b.classList.remove('active'));
+        allTab.classList.add('active');
+        renderModalGrid('all');
+      });
+      modalCategoryTabs.appendChild(allTab);
+
+      // カテゴリタブ
+      categories.forEach(cat => {
+        const tab = document.createElement('button');
+        tab.className = 'vmodal-tab-btn';
+        tab.textContent = cat.name;
+        tab.addEventListener('click', () => {
+          activeTabId = cat.id;
+          modalCategoryTabs.querySelectorAll('.vmodal-tab-btn').forEach(b => b.classList.remove('active'));
+          tab.classList.add('active');
+          renderModalGrid(cat.id);
+        });
+        modalCategoryTabs.appendChild(tab);
+      });
+
+      // 初期グリッドを「全体」で描画
+      renderModalGrid('all');
+
+      videoSelectModal.style.display = 'block';
+    };
+
+    const closeSelectModal = () => {
+      videoSelectModal.style.display = 'none';
+    };
+
+    if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeSelectModal);
+    if (modalOverlay) modalOverlay.addEventListener('click', closeSelectModal);
+
+    // キャンセルボタン
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    if (modalCancelBtn) modalCancelBtn.addEventListener('click', closeSelectModal);
+
+    // スロットの初期レンダリング
+    renderSlots();
+
+    // 確定保存
+    if (saveAutoplayBtn) {
+      saveAutoplayBtn.addEventListener('click', () => {
+        localStorage.setItem(storageKey, JSON.stringify(config));
+        alert('待機中動画の設定を保存しました。');
+        window.location.href = `manage.html?id=${buildingId}`;
+      });
+    }
+  }
+});

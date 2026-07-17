@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="シアター監視・動画管理システム adeliaeXR Distributor の設置現場監視画面。各シアターの稼働状況や動画再生状態をリアルタイムに確認・管理できます。">
+  <title>設置現場 監視一覧 | adeliaeXR Distributor</title>
+  
+  <!-- CSS定義のインポート -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- 共通Web Components定義のインポート (deferで非同期読み込み) -->
+  <script src="js/components/app-header.js" defer></script>
+  <script src="js/components/building-card.js" defer></script>
+  <script src="js/components/detail-popup.js" defer></script>
+  <script src="js/components/camera-zoom-popup.js" defer></script>
+  
+  <!-- メインアプリケーションロジック -->
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- 共通ヘッダーコンポーネント (アクティブタブ: 監視, アラートカウント: 1) -->
+    <app-header active-tab="monitoring" alert-count="1" page-title="設置現場 監視"></app-header>
+    
+    <!-- メインコンテンツエリア -->
+    <main class="main-content">
+      <div class="buildings-grid">
+        <!-- 1号棟 (正常稼働中) -->
+        <building-card 
+          id="1" 
+          name="1号棟" 
+          status="normal" 
+          app-type="2D映像表示ソフト" 
+          content-name="海中探訪 vol.1">
+        </building-card>
+        
+        <!-- 2号棟 (正常稼働中) -->
+        <building-card 
+          id="2" 
+          name="2号棟" 
+          status="normal" 
+          app-type="360°映像表示ソフト" 
+          content-name="宇宙遊泳体験">
+        </building-card>
+        
+        <!-- 3号棟 (通信エラー) -->
+        <building-card 
+          id="3" 
+          name="3号棟" 
+          status="error" 
+          app-type="—" 
+          content-name="—">
+        </building-card>
+        
+        <!-- 4号棟 (正常稼働中) -->
+        <building-card 
+          id="4" 
+          name="4号棟" 
+          status="normal" 
+          app-type="3DCGデータ表示ソフト" 
+          content-name="古代遺跡モデル">
+        </building-card>
+      </div>
+      
+      <!-- 共通詳細/管理ポップアップコンポーネント (初期状態は非表示) -->
+      <detail-popup></detail-popup>
+      <camera-zoom-popup></camera-zoom-popup>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="adeliaeXR プレイヤー。没入感の高い360°VR映像や2D映像のコンテンツをシネマティックに再生・プレビューできます。">
+  <title>コンテンツプレイヤー | adeliaeXR</title>
+  
+  <!-- CSS定義のインポート -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- メインアプリケーションロジック -->
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- ヘッダーロゴ -->
+    <header class="app-header">
+      <a href="#" class="logo-text">adeliaeXR</a>
+    </header>
+    
+    <!-- カテゴリ切り替えボタン -->
+    <div class="category-filter-bar">
+      <button class="filter-btn active" data-category="all">すべて</button>
+      <button class="filter-btn" data-category="nature">自然</button>
+      <button class="filter-btn" data-category="scenery">景色</button>
+    </div>
+
+    <!-- リスト一覧ビュー (常にベースに表示) -->
+    <main class="main-content" id="listView">
+      
+      <!-- 自然カテゴリセクション -->
+      <section class="movie-category-section" id="section-nature">
+        <h2 class="category-title">自然</h2>
+        <div class="movies-grid">
+          
+          <!-- サメ映像 -->
+          <div class="movie-card" 
+               data-title="サメ" 
+               data-full-title="海中探訪 - サメ of the deep"
+               data-desc="サメが来る！"
+               data-image="images/nature_shark.jpg" 
+               data-type="Video"
+               data-category="自然"
+               id="nature-shark">
+            <img src="images/nature_shark.jpg" alt="サメ">
+          </div>
+          
+          <!-- 恐竜映像 -->
+          <div class="movie-card" 
+               data-title="恐竜" 
+               data-full-title="古代ジャングル - T-Rexの足跡"
+               data-desc="恐竜が吠える！恐ろしい古代の王者が目の前に現れます。"
+               data-image="images/nature_dinosaur.jpg" 
+               data-type="Video"
+               data-category="自然"
+               id="nature-dinosaur">
+            <img src="images/nature_dinosaur.jpg" alt="恐竜">
+          </div>
+          
+          <!-- 水田映像 (360度) -->
+          <div class="movie-card" 
+               data-title="棚田" 
+               data-full-title="日本の棚田 - ドローン空撮 360°"
+               data-desc="ドローンによる水田空撮。360度見渡す限りのどかな棚田風景が広がります。"
+               data-image="images/nature_paddy.jpg" 
+               data-type="360° Video"
+               data-category="自然"
+               id="nature-paddy">
+            <img src="images/nature_paddy.jpg" alt="棚田">
+            <div class="badge-360">360° VR</div>
+          </div>
+          
+        </div>
+      </section>
+
+      <!-- 景色カテゴリセクション -->
+      <section class="movie-category-section" id="section-scenery">
+        <h2 class="category-title">景色</h2>
+        <div class="movies-grid">
+          
+          <!-- ヨット映像 (360度) -->
+          <div class="movie-card" 
+               data-title="ヨット" 
+               data-full-title="極上リゾート - ヨットクルージング 360°"
+               data-desc="ヨットの上から眺める美しい海と島々。360度の開放的なパノラマです。"
+               data-image="images/scenery_yacht.jpg" 
+               data-type="360° Video"
+               data-category="景色"
+               id="scenery-yacht">
+            <img src="images/scenery_yacht.jpg" alt="ヨット">
+            <div class="badge-360">360° VR</div>
+          </div>
+          
+          <!-- 滝と虹映像 -->
+          <div class="movie-card" 
+               data-title="滝" 
+               data-full-title="大自然の驚異 - 滝と虹の絶景"
+               data-desc="大迫力の滝と、水しぶきの中に架かる鮮やかな虹のコラボレーション。"
+               data-image="images/scenery_waterfall.jpg" 
+               data-type="Video"
+               data-category="景色"
+               id="scenery-waterfall">
+            <img src="images/scenery_waterfall.jpg" alt="滝">
+          </div>
+          
+        </div>
+      </section>
+      
+    </main>
+
+    <!-- 詳細表示モーダル (初期状態は非表示) -->
+    <div class="detail-modal-overlay" id="detailModal" style="display: none;">
+      <div class="detail-modal-container" id="detailModalContainer">
+        <!-- 戻る（閉じる）ボタン -->
+        <button class="back-btn" id="backBtn" aria-label="閉じる">←</button>
+        
+        <div class="detail-grid">
+          <!-- 左カラム: プレビュー -->
+          <div class="detail-preview-col">
+            <div class="cinema-preview">
+              <img src="" id="detailImage" alt="プレビュー画像">
+            </div>
+          </div>
+          
+          <!-- 右カラム: 情報 -->
+          <div class="detail-info-col">
+            <h1 class="detail-title" id="detailTitleText">タイトル</h1>
+            
+            <div class="desc-box">
+              <p id="detailDescText">説明文</p>
+            </div>
+            
+            <div class="meta-row">
+              <span class="meta-item">Type: <strong id="detailTypeText">Video</strong></span>
+              <span class="meta-item">Category: <strong id="detailCategoryText">自然</strong></span>
+            </div>
+            
+            <button class="play-trigger-btn" id="playTriggerBtn">再生</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- イマーシブ・シアターモーダル (全画面プレイヤー) -->
+  <div class="theater-modal" id="theaterModal">
+    <div class="theater-layout">
+      <!-- 左カラム: プレイヤーと終了ボタン -->
+      <div class="theater-left-col">
+        <div class="theater-viewport">
+          <div class="theater-screen-bg" id="theaterScreen"></div>
+        </div>
+        <button class="theater-end-btn" id="closeTheaterBtn">終了</button>
+      </div>
+
+      <!-- 右カラム: コントロールパネル -->
+      <div class="theater-sidebar">
+        <!-- ZOOM -->
+        <div class="control-panel-box">
+          <div class="panel-title">ZOOM</div>
+          <div class="zoom-buttons">
+            <button class="ctrl-btn-rect" id="zoomOutBtn">-</button>
+            <button class="ctrl-btn-rect" id="zoomInBtn">+</button>
+          </div>
+        </div>
+
+        <!-- MOVE -->
+        <div class="control-panel-box">
+          <div class="panel-title">MOVE</div>
+          <div class="d-pad">
+            <button class="dpad-btn up" id="moveUpBtn">↑</button>
+            <button class="dpad-btn left" id="moveLeftBtn">←</button>
+            <button class="dpad-btn right" id="moveRightBtn">→</button>
+            <button class="dpad-btn down" id="moveDownBtn">↓</button>
+          </div>
+        </div>
+
+        <!-- ROTATE -->
+        <div class="control-panel-box">
+          <div class="panel-title">ROTATE</div>
+          <div class="d-pad">
+            <button class="dpad-btn up" id="rotateUpBtn">↑</button>
+            <button class="dpad-btn left" id="rotateLeftBtn">←</button>
+            <button class="dpad-btn right" id="rotateRightBtn">→</button>
+            <button class="dpad-btn down" id="rotateDownBtn">↓</button>
+          </div>
+        </div>
+
+        <!-- RESET -->
+        <div class="control-panel-box">
+          <div class="panel-title">RESET</div>
+          <button class="ctrl-btn-wide" id="resetViewBtn">視点位置リセット</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
