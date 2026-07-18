@@ -15,6 +15,7 @@ class RegisterPopup extends HTMLElement {
     this.setupDragAndDrop(); // レンダリング後にサムネイルのD&Dイベントを設定
     this.setupVideoUpload(); // レンダリング後に動画のD&Dイベントを設定
     this.setupSuggestions(); // レンダリング後に候補画像の選択イベントを設定
+    this.updateBuildingNames(); // 現場名の表示を動的更新する
     this.resetVideoUI(); // 最初は動画ファイル未設定状態にする
     this.style.display = 'block';
     document.body.style.overflow = 'hidden';
@@ -30,13 +31,27 @@ class RegisterPopup extends HTMLElement {
       if (
         e.target.classList.contains('popup-overlay') || 
         e.target.classList.contains('popup-close-btn') || 
-        e.target.classList.contains('btn-cancel')
+        (e.target.classList.contains('btn-cancel') && !e.target.closest('.btn-play-preview'))
       ) {
         this.close();
       }
 
       if (e.target.classList.contains('btn-submit')) {
         this.submitForm();
+      }
+
+      if (e.target.closest('.btn-play-preview')) {
+        const playerModal = this.querySelector('#videoPlayerModal');
+        if (playerModal) {
+          playerModal.style.display = 'flex';
+        }
+      }
+
+      if (e.target.closest('#videoPlayerCloseBtn') || e.target.closest('#videoPlayerOverlay')) {
+        const playerModal = this.querySelector('#videoPlayerModal');
+        if (playerModal) {
+          playerModal.style.display = 'none';
+        }
       }
     });
   }
@@ -157,8 +172,54 @@ class RegisterPopup extends HTMLElement {
     if (typeSelect) typeSelect.value = '';
     if (categorySelect) categorySelect.value = '';
 
+    // 反映先の現場チェックボックスをリセット
+    const checkBoxes = this.querySelectorAll('input[name="syncSites"]');
+    checkBoxes.forEach(cb => cb.checked = false);
+
     this.resetThumbnailUI();
     this.setFieldsDisabled(true);
+  }
+
+  updateBuildingNames() {
+    const siteNames = this.querySelectorAll('.site-name');
+    siteNames.forEach(span => {
+      const id = span.getAttribute('data-id');
+      const storedName = localStorage.getItem(`adeliae_building_name_${id}`);
+      if (storedName) {
+        span.textContent = storedName;
+      }
+
+      // 重複表示防止のため、既存の注意書きを削除
+      const existingNote = span.parentElement.querySelector('.sync-site-note');
+      if (existingNote) {
+        existingNote.remove();
+      }
+
+      // 他の現場と上映動画を同じにしているかをチェック
+      const syncSourceKey = `adeliae_sync_source_building_${id}`;
+      const syncSourceVal = localStorage.getItem(syncSourceKey) || 'none';
+
+      const checkbox = span.parentElement.querySelector('input[name="syncSites"]');
+      if (syncSourceVal !== 'none' && checkbox) {
+        checkbox.disabled = true;
+        checkbox.checked = false; // 同期中現場はチェック無効化
+        span.parentElement.style.opacity = '0.5';
+        span.parentElement.style.pointerEvents = 'none';
+
+        const targetName = localStorage.getItem(`adeliae_building_name_${syncSourceVal}`) || `${syncSourceVal}号棟`;
+        const noteSpan = document.createElement('span');
+        noteSpan.className = 'sync-site-note';
+        noteSpan.textContent = ` （${targetName}の上映動画と同じにしています）`;
+        noteSpan.style.color = 'var(--text-color-secondary)';
+        noteSpan.style.fontSize = '12px';
+        noteSpan.style.marginLeft = '8px';
+        span.parentElement.appendChild(noteSpan);
+      } else if (checkbox) {
+        checkbox.disabled = false;
+        span.parentElement.style.opacity = '1';
+        span.parentElement.style.pointerEvents = 'auto';
+      }
+    });
   }
 
   setFieldsDisabled(disabled) {
@@ -172,6 +233,15 @@ class RegisterPopup extends HTMLElement {
     }
     const inputs = this.querySelectorAll('#registerGrid input, #registerGrid textarea, #registerGrid select');
     inputs.forEach(input => {
+      if (input.name === 'syncSites') {
+        const id = input.value;
+        const syncSourceKey = `adeliae_sync_source_building_${id}`;
+        const syncSourceVal = localStorage.getItem(syncSourceKey) || 'none';
+        if (syncSourceVal !== 'none') {
+          input.disabled = true;
+          return;
+        }
+      }
       input.disabled = disabled;
     });
   }
@@ -288,6 +358,7 @@ class RegisterPopup extends HTMLElement {
     const type = typeSelect ? typeSelect.value : '';
     const categoryId = categorySelect ? categorySelect.value : '';
     const thumbnailData = (imgElement && imgElement.src.startsWith('data:')) ? imgElement.src : null;
+    const checkedSites = Array.from(this.querySelectorAll('input[name="syncSites"]:checked')).map(cb => cb.value);
 
     if (!videoFile) {
       alert('動画ファイルを選択してください。');
@@ -310,7 +381,8 @@ class RegisterPopup extends HTMLElement {
         type,
         categoryId,
         thumbnailData,
-        videoFileName: videoFile.name
+        videoFileName: videoFile.name,
+        syncBuildingIds: checkedSites
       },
       bubbles: true,
       composed: true
@@ -486,6 +558,7 @@ class RegisterPopup extends HTMLElement {
           .popup-footer-actions {
             margin-left: -20px;
             margin-right: -20px;
+            margin-bottom: -20px;
             padding: 24px 20px;
             width: calc(100% + 40px);
           }
@@ -746,6 +819,7 @@ class RegisterPopup extends HTMLElement {
           margin-top: 40px;
           margin-left: -40px;
           margin-right: -40px;
+          margin-bottom: -40px;
           padding: 24px 40px;
           box-sizing: border-box;
           width: calc(100% + 80px);
@@ -939,6 +1013,84 @@ class RegisterPopup extends HTMLElement {
           user-select: none;
         }
 
+        /* 上映動画に反映 */
+        .sync-sites-group {
+          margin-top: 20px;
+        }
+
+        .sync-sites-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          background-color: var(--bg-color-main);
+          border: 1px solid rgba(0, 210, 255, 0.25);
+          border-radius: var(--border-radius-medium);
+          padding: 16px 20px;
+          box-sizing: border-box;
+          margin-top: 8px;
+        }
+
+        .sync-site-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          cursor: pointer;
+          color: var(--text-color-primary);
+          font-size: 14px;
+          user-select: none;
+          transition: color 0.2s;
+        }
+
+        .sync-site-item:hover {
+          color: var(--color-cyan);
+        }
+
+        .sync-site-item input[type="checkbox"] {
+          position: absolute;
+          opacity: 0;
+          cursor: pointer;
+          height: 0;
+          width: 0;
+        }
+
+        .checkbox-custom {
+          position: relative;
+          height: 18px;
+          width: 18px;
+          background-color: var(--bg-color-card);
+          border: 1.5px solid rgba(0, 210, 255, 0.4);
+          border-radius: 4px;
+          transition: all 0.2s;
+          flex-shrink: 0;
+        }
+
+        .sync-site-item:hover .checkbox-custom {
+          border-color: var(--color-cyan);
+        }
+
+        .sync-site-item input:checked ~ .checkbox-custom {
+          background-color: var(--color-cyan);
+          border-color: var(--color-cyan);
+          box-shadow: 0 0 6px var(--color-cyan-glow);
+        }
+
+        .checkbox-custom::after {
+          content: "";
+          position: absolute;
+          display: none;
+          left: 5px;
+          top: 1px;
+          width: 4px;
+          height: 8px;
+          border: solid var(--bg-color-main);
+          border-width: 0 2px 2px 0;
+          transform: rotate(45deg);
+        }
+
+        .sync-site-item input:checked ~ .checkbox-custom::after {
+          display: block;
+        }
+
         /* サムネイル候補画像 */
         .thumbnail-suggestions-section {
           display: flex;
@@ -990,6 +1142,52 @@ class RegisterPopup extends HTMLElement {
           object-fit: cover;
           display: block;
         }
+
+        .btn-play-preview {
+          margin: 16px auto 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          width: fit-content;
+          min-width: 0;
+          padding: 8px 16px;
+          align-self: center;
+        }
+
+        /* 動画プレイヤー子モーダル */
+        .video-player-modal {
+          position: fixed;
+          top: 0; left: 0; width: 100%; height: 100%;
+          z-index: 2000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .video-player-overlay {
+          position: absolute;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background-color: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(8px);
+        }
+
+        .video-player-wrapper {
+          position: relative;
+          z-index: 2001;
+          width: 90%;
+          max-width: 1100px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 12px;
+          animation: popupFadeIn 0.2s ease-out;
+        }
+
+        .video-player-close {
+          width: 36px;
+          height: 36px;
+        }
       </style>
 
       <div class="popup-overlay"></div>
@@ -1024,7 +1222,7 @@ class RegisterPopup extends HTMLElement {
 
               <!-- 動画反映時の表示 -->
               <div class="video-preview-container" id="videoPreviewContainer" style="display: none;">
-                <div class="video-badge">選択中の動画</div>
+                <div class="video-badge">動画ファイル</div>
                 <div class="video-info-box">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-cyan);">
                     <polygon points="23 7 16 12 23 17 23 7"></polygon>
@@ -1033,10 +1231,10 @@ class RegisterPopup extends HTMLElement {
                   <span id="selectedVideoFileName" class="video-file-name">動画ファイル名.mp4</span>
                 </div>
                 <button class="btn-change-video" id="changeVideoBtn">
-                  動画を変更
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                   </svg>
+                  動画を変更
                 </button>
               </div>
 
@@ -1070,10 +1268,10 @@ class RegisterPopup extends HTMLElement {
                   <div class="thumbnail-badge">サムネイル画像</div>
                   <img id="registerThumbnailImg" src="" alt="サムネイル" class="thumbnail-img">
                   <button class="btn-change-image" id="changeImageBtn">
-                    画像変更
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                     </svg>
+                    画像を変更
                   </button>
                 </div>
 
@@ -1095,6 +1293,14 @@ class RegisterPopup extends HTMLElement {
                 </div>
               </div>
             </div>
+
+            <!-- 動画を再生して確認ボタン -->
+            <button class="action-btn btn-cancel btn-play-preview" id="playPreviewBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              動画を確認する
+            </button>
           </div>
 
             <!-- 右カラム: フォーム -->
@@ -1127,7 +1333,34 @@ class RegisterPopup extends HTMLElement {
                     ${categoryOptions}
                   </select>
                 </div>
-            </div>
+              </div>
+
+              <!-- 上映動画に反映セクション -->
+              <div class="form-group sync-sites-group">
+                <label class="form-label">上映動画に反映</label>
+                <div class="sync-sites-list">
+                  <label class="sync-site-item">
+                    <input type="checkbox" name="syncSites" value="1">
+                    <span class="checkbox-custom"></span>
+                    <span class="site-name" data-id="1">1号棟</span>
+                  </label>
+                  <label class="sync-site-item">
+                    <input type="checkbox" name="syncSites" value="2">
+                    <span class="checkbox-custom"></span>
+                    <span class="site-name" data-id="2">2号棟</span>
+                  </label>
+                  <label class="sync-site-item">
+                    <input type="checkbox" name="syncSites" value="3">
+                    <span class="checkbox-custom"></span>
+                    <span class="site-name" data-id="3">3号棟</span>
+                  </label>
+                  <label class="sync-site-item">
+                    <input type="checkbox" name="syncSites" value="4">
+                    <span class="checkbox-custom"></span>
+                    <span class="site-name" data-id="4">4号棟</span>
+                  </label>
+                </div>
+              </div>
           </div>
         </div>
 
@@ -1135,6 +1368,20 @@ class RegisterPopup extends HTMLElement {
         <div class="popup-footer-actions">
           <button class="action-btn btn-cancel">キャンセル</button>
           <button class="action-btn btn-submit">追加する</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 動画プレイヤー用子モーダル -->
+    <div class="video-player-modal" id="videoPlayerModal" style="display: none;">
+      <div class="video-player-overlay" id="videoPlayerOverlay"></div>
+      <div class="video-player-wrapper">
+        <button class="vmodal-close-btn video-player-close" id="videoPlayerCloseBtn"></button>
+        <div class="dummy-video-frame" style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: var(--border-radius-medium); border: 2px solid var(--color-cyan); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--color-cyan)" stroke="none">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span style="color: var(--color-cyan); font-size: 16px; font-weight: bold; letter-spacing: 1px;">動画プレビュー表示枠</span>
         </div>
       </div>
     </div>

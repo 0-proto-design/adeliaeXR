@@ -64,14 +64,32 @@ class CameraZoomPopup extends HTMLElement {
         .zoom-popup-container {
           display: none;
           position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 90%;
+          max-width: 1100px;
+          height: auto;
+          max-height: 85vh;
           background-color: var(--bg-color-main);
           z-index: 1000;
           flex-direction: column;
           overflow: hidden;
+          border-radius: var(--border-radius-large);
+          border: 1.5px solid var(--color-cyan);
+          box-shadow: 0 8px 48px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 210, 255, 0.08);
+          animation: popupFadeIn 0.2s ease-out;
+        }
+
+        @keyframes popupFadeIn {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -45%);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, -50%);
+          }
         }
 
         .zoom-popup-header {

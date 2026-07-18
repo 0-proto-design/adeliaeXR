@@ -16,9 +16,9 @@ class CategoryPopup extends HTMLElement {
     // ディープコピーしてポップアップ内の一時編集状態を作る
     this.categories = JSON.parse(JSON.stringify(categories));
     this.render();
+    this.renderListOnly(); // 開いた時にリストをレンダリングする
     this.style.display = 'block';
     document.body.style.overflow = 'hidden';
-    this.attachListEvents();
   }
 
   close(save = false) {
@@ -248,105 +248,6 @@ class CategoryPopup extends HTMLElement {
           font-family: var(--font-family);
         }
 
-        .popup-overlay {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          background-color: rgba(0, 0, 0, 0.7);
-          backdrop-filter: blur(4px);
-        }
-
-        .popup-wrapper {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 90%;
-          max-width: 500px;
-          background-color: var(--bg-color-card);
-          border: 2px solid var(--color-cyan);
-          border-radius: var(--border-radius-large);
-          box-shadow: 0 0 30px rgba(0, 210, 255, 0.3);
-          overflow: hidden;
-          z-index: 2;
-          display: flex;
-          flex-direction: column;
-          animation: popupFadeIn 0.25s ease-out;
-        }
-
-        @keyframes popupFadeIn {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -45%);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, -50%);
-          }
-        }
-
-        /* ヘッダー */
-        .popup-header {
-          padding: 18px 24px;
-          border-bottom: 1px solid rgba(0, 210, 255, 0.15);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .popup-title {
-          font-size: 20px;
-          font-weight: bold;
-          color: var(--text-color-cyan);
-        }
-
-        .popup-close-btn {
-          background-color: var(--color-status-red);
-          border: none;
-          width: 32px;
-          height: 32px;
-          border-radius: var(--border-radius-small);
-          cursor: pointer;
-          position: relative;
-          transition: all 0.15s;
-          flex-shrink: 0;
-          box-sizing: border-box;
-          font-size: 0;
-          color: transparent;
-        }
-
-        .popup-close-btn:hover {
-          background-color: #ff2222;
-        }
-
-        .popup-close-btn::before,
-        .popup-close-btn::after {
-          content: "";
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 16px;
-          height: 2px;
-          background-color: #fff;
-          border-radius: 1px;
-        }
-
-        .popup-close-btn::before {
-          transform: translate(-50%, -50%) rotate(45deg);
-        }
-
-        .popup-close-btn::after {
-          transform: translate(-50%, -50%) rotate(-45deg);
-        }
-
-        /* コンテンツ */
-        .popup-content {
-          padding: 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-
         /* 新規追加セクション */
         .new-cat-section {
           display: flex;
@@ -381,6 +282,7 @@ class CategoryPopup extends HTMLElement {
           border-radius: var(--border-radius-medium);
           cursor: pointer;
           transition: all 0.2s;
+          white-space: nowrap;
         }
 
         .btn-add-cat:hover {
@@ -390,25 +292,9 @@ class CategoryPopup extends HTMLElement {
 
         /* カテゴリリスト */
         .cat-list-container {
-          max-height: 250px;
-          overflow-y: auto;
           display: flex;
           flex-direction: column;
           gap: 8px;
-          padding-right: 4px;
-        }
-
-        /* スクロールバー装飾 */
-        .cat-list-container::-webkit-scrollbar {
-          width: 6px;
-        }
-        .cat-list-container::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 3px;
-        }
-        .cat-list-container::-webkit-scrollbar-thumb {
-          background: rgba(0, 210, 255, 0.3);
-          border-radius: 3px;
         }
 
         .empty-list {
@@ -511,60 +397,15 @@ class CategoryPopup extends HTMLElement {
           background-color: var(--color-status-red-bg);
           box-shadow: 0 0 6px rgba(255, 77, 77, 0.2);
         }
-
-        /* ボタンエリア */
-        .popup-footer-actions {
-          padding: 14px 24px;
-          border-top: 1px solid rgba(0, 210, 255, 0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          gap: 16px;
-          background-color: var(--bg-color-card);
-          box-sizing: border-box;
-        }
-
-        .popup-btn {
-          padding: 10px 24px;
-          font-size: 15px;
-          font-weight: bold;
-          border-radius: var(--border-radius-medium);
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .popup-btn.btn-cancel {
-          background: transparent;
-          border: 1.5px solid var(--color-cyan);
-          color: var(--color-cyan);
-        }
-
-        .popup-btn.btn-cancel:hover {
-          background-color: rgba(0, 210, 255, 0.08);
-          box-shadow: 0 0 8px var(--color-cyan-glow);
-          color: var(--color-cyan);
-        }
-
-        .popup-btn.btn-save {
-          background-color: var(--color-cyan);
-          border: 1.5px solid var(--color-cyan);
-          color: var(--bg-color-main);
-        }
-
-        .popup-btn.btn-save:hover {
-          background-color: var(--color-cyan);
-          box-shadow: 0 0 12px var(--color-cyan-glow);
-        }
       </style>
 
       <div class="popup-overlay"></div>
-      <div class="popup-wrapper">
-        <div class="popup-header">
-          <span class="popup-title">カテゴリ管理設定</span>
-          <button class="popup-close-btn"></button>
+      <div class="video-select-wrapper" style="max-width: 420px; max-height: 85vh; display: flex; flex-direction: column;">
+        <div class="video-select-header">
+          <div class="video-select-title">カテゴリ編集</div>
+          <button class="vmodal-close-btn popup-close-btn">&times;</button>
         </div>
-        <div class="popup-content">
+        <div class="popup-content" style="padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; flex: 1;">
           <!-- 新規追加フォーム -->
           <div class="new-cat-section">
             <input type="text" class="new-cat-input" placeholder="新しいカテゴリ名を入力">
@@ -577,10 +418,12 @@ class CategoryPopup extends HTMLElement {
           </div>
         </div>
 
-        <!-- 保存ボタンエリア -->
-        <div class="popup-footer-actions">
-          <button class="popup-btn btn-cancel">キャンセル</button>
-          <button class="popup-btn btn-save">変更を適用</button>
+        <!-- 保存ボタンエリア (ロゴの変更モーダルと同一構造の固定表示) -->
+        <div class="vmodal-footer" style="justify-content: center; flex-shrink: 0;">
+          <div style="display: flex; gap: 8px;">
+            <button class="add-category-btn vmodal-cancel-btn btn-cancel" style="padding: 8px 16px; font-size: 14px;">キャンセル</button>
+            <button class="new-register-btn btn-save" style="padding: 8px 24px; font-size: 14px;">変更を適用する</button>
+          </div>
         </div>
       </div>
     `;

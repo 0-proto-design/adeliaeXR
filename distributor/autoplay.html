@@ -9,7 +9,7 @@
   <!-- CSS定義のインポート -->
   <link rel="stylesheet" href="css/style.css">
   
-  <!-- 共通Web Components定義のインポート -->
+  <!-- 共通Web Components定義 of インポート -->
   <script src="js/components/app-header.js" defer></script>
   
   <!-- メインアプリケーションロジック -->
@@ -27,17 +27,36 @@
       <!-- 左右2カラムレイアウト -->
       <div class="autoplay-columns-wrapper">
         
-        <!-- 左側：待機時間設定 -->
+        <!-- 左側：自動再生設定 -->
         <div class="autoplay-panel">
-          <div class="autoplay-title">待機時間設定</div>
-          <div class="autoplay-desc">自動再生が開始されるまでの待機時間を設定します</div>
+          <div class="autoplay-title">自動再生設定</div>
+
+          <!-- 注意文言 -->
+          <div class="autoplay-desc">
+            操作がない時間が経過すると自動で再生を開始します
+          </div>
+
+          <!-- 自動再生スイッチ -->
+          <div class="autoplay-setting-item" style="margin-top: 10px; margin-bottom: 8px;">
+            <span class="autoplay-setting-label">自動再生</span>
+            <div class="toggle-switch-wrapper">
+              <div class="toggle-switch on" id="autoplayToggle">
+                <div class="toggle-handle"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- オフ時警告メッセージ -->
+          <div id="autoplayDisabledWarning" style="display: none; font-size: 13px; color: var(--color-status-red); font-weight: bold; margin-top: 4px; margin-bottom: 16px; line-height: 1.5;">
+            ※現在、自動再生機能はオフです。設定を変更しても自動再生は行われません。
+          </div>
 
           <!-- 待機時間調整 -->
-          <div class="autoplay-setting-item" style="margin-top: 10px;">
-            <span class="autoplay-setting-label">待機時間</span>
+          <div class="autoplay-setting-item" style="border-top: 1px solid rgba(143, 160, 192, 0.1); padding-top: 20px;">
+            <span class="autoplay-setting-label">自動再生開始までの時間</span>
             <div class="wait-time-control">
               <div class="wait-time-input-wrapper">
-                <input type="text" class="wait-time-input" id="waitTimeInput" value="30" readonly>
+                <input type="text" class="wait-time-input" id="waitTimeInput" value="30">
                 <span class="wait-time-unit">分</span>
               </div>
               <div class="spin-buttons">
@@ -47,7 +66,7 @@
             </div>
           </div>
 
-          <!-- プリセット -->
+
           <div class="autoplay-setting-item">
             <span class="autoplay-setting-label" style="align-self: flex-start; margin-top: 8px;">プリセット:</span>
             <div class="presets-grid">
@@ -58,36 +77,24 @@
             </div>
           </div>
 
-          <!-- 自動再生スイッチ -->
-          <div class="autoplay-setting-item" style="border-top: 1px solid rgba(143, 160, 192, 0.1); padding-top: 20px;">
-            <span class="autoplay-setting-label">自動再生</span>
-            <div class="toggle-switch-wrapper">
-              <div class="toggle-switch on" id="autoplayToggle">
-                <div class="toggle-handle"></div>
-              </div>
-            </div>
+          <!-- ボタンエリア -->
+          <div style="display: flex; gap: 12px; margin-top: 24px; border-top: 1px solid rgba(143, 160, 192, 0.1); padding-top: 20px;">
+            <button class="add-category-btn" id="backToManageBtn" style="flex: 1; margin: 0; padding: 12px 16px; font-size: 15px; font-weight: bold; background: transparent; border: 1.5px solid var(--color-cyan); color: var(--color-cyan); border-radius: var(--border-radius-medium); cursor: pointer; transition: all 0.2s;">キャンセル</button>
+            <button class="new-register-btn" id="saveAutoplayBtn" style="flex: 1; margin: 0; padding: 12px 16px; font-size: 15px; font-weight: bold; border-radius: var(--border-radius-medium); cursor: pointer;">
+              設定を確定する
+            </button>
           </div>
-
-          <div style="font-size: 13px; color: #ff8a65; margin-top: -10px;">
-            ※ 待機時間経過後、選択動画を順番に自動再生します
-          </div>
-
-          <!-- 確定ボタン -->
-          <button class="btn btn-primary" id="saveAutoplayBtn" style="width: 100%; padding: 16px; font-size: 16px; font-weight: bold; border: none; border-radius: var(--border-radius-medium); margin-top: 10px;">
-            設定を確定
-          </button>
         </div>
 
         <!-- 右側：再生動画スロット -->
         <div class="autoplay-panel">
-          <div class="autoplay-title" id="slotsPanelTitle">再生動画 （1～5件）</div>
+          <div class="autoplay-title" id="slotsPanelTitle">自動再生する動画 （1～5件）</div>
           <div class="autoplay-desc">順番が再生順になります　空のスロットをクリック → 動画を選択</div>
 
           <div class="slots-container" id="slotsContainer">
             <!-- js/app.js からスロットが動的描画されます -->
           </div>
         </div>
-
       </div>
     </main>
 
@@ -98,22 +105,18 @@
       <div class="video-select-wrapper">
         <!-- ヘッダー: タイトル + 閉じるボタン -->
         <div class="video-select-header">
-          <div class="video-select-title" id="modalTitle">コンテンツを選択　（スロット 1 に追加）</div>
+          <div class="video-select-title" id="modalTitle">動画を選択　（スロット 1 に追加）</div>
           <button class="vmodal-close-btn" id="modalCloseBtn">&times;</button>
         </div>
         <!-- カテゴリタブ -->
-        <div class="vmodal-tabs" id="modalCategoryTabs">
+        <div class="content-tabs" id="modalCategoryTabs" style="margin: 16px 24px 0 24px; padding-bottom: 4px;">
           <!-- js/app.js から動的生成 -->
         </div>
         <!-- 動画グリッド -->
         <div class="vmodal-grid" id="modalVideoGrid">
           <!-- js/app.js から動的生成 -->
         </div>
-        <!-- フッター: ヒントテキスト + キャンセルボタン -->
-        <div class="vmodal-footer">
-          <span class="vmodal-hint" id="modalHint">サムネをクリックして選択 → スロット 1 に追加されます</span>
-          <button class="btn btn-secondary vmodal-cancel-btn" id="modalCancelBtn">キャンセル</button>
-        </div>
+
       </div>
     </div>
 

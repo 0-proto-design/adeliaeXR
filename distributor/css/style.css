@@ -658,8 +658,8 @@ body:has(.sync-execute-container) .main-content {
 
 .preset-btn {
   background-color: transparent;
-  border: 1.5px solid rgba(0, 210, 255, 0.3);
-  color: var(--text-color-secondary);
+  border: 1.5px solid var(--color-cyan);
+  color: var(--color-cyan);
   padding: 10px 4px;
   font-size: 14px;
   font-weight: bold;
@@ -670,15 +670,20 @@ body:has(.sync-execute-container) .main-content {
 }
 
 .preset-btn:hover {
-  border-color: var(--color-cyan);
-  color: var(--color-cyan);
+  background-color: rgba(0, 210, 255, 0.08);
+  box-shadow: 0 0 8px rgba(0, 210, 255, 0.2);
 }
 
 .preset-btn.active {
-  border: 2px solid var(--color-cyan);
-  color: var(--color-cyan);
-  background-color: rgba(0, 210, 255, 0.03);
-  box-shadow: 0 0 8px var(--color-cyan-glow);
+  background-color: var(--color-cyan);
+  border-color: var(--color-cyan);
+  color: #101929;
+  box-shadow: 0 0 12px var(--color-cyan-glow);
+}
+
+.preset-btn.active:hover {
+  background-color: var(--color-cyan);
+  box-shadow: 0 0 12px var(--color-cyan-glow);
 }
 
 /* トグルスイッチ */
@@ -901,8 +906,8 @@ body:has(.sync-execute-container) .main-content {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 92%; max-width: 900px;
-  max-height: 85vh;
+  width: 94%; max-width: 1400px;
+  height: 90vh;
   background-color: var(--bg-color-card);
   border: 1.5px solid var(--color-cyan);
   border-radius: var(--border-radius-large);
@@ -1125,4 +1130,174 @@ body:has(.sync-execute-container) .main-content {
   background-color: var(--color-cyan);
   color: #101929;
   border-color: var(--color-cyan);
+}
+
+/* サムネイル・画像アップロードボックス共通 */
+.thumbnail-upload-box {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto;
+  box-sizing: border-box;
+  background-color: transparent;
+  border: 1.5px dashed rgba(143, 160, 192, 0.5);
+  border-radius: var(--border-radius-medium);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.thumbnail-upload-box.drag-over {
+  background-color: rgba(0, 210, 255, 0.05);
+  border-color: var(--color-cyan);
+}
+
+.thumbnail-upload-box.has-image {
+  background-color: var(--bg-color-main);
+  border: 1.5px solid var(--color-cyan);
+  border-radius: var(--border-radius-small);
+  overflow: hidden;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 20px;
+}
+
+.upload-placeholder-title {
+  color: var(--text-color-cyan);
+  font-size: 14px;
+}
+
+.upload-placeholder-text {
+  color: var(--text-color-primary);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.upload-placeholder-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.or-text {
+  color: var(--text-color-secondary);
+  font-size: 13px;
+}
+
+.inline-file-select-btn {
+  background-color: transparent;
+  border: 1px solid var(--color-cyan);
+  color: var(--color-cyan);
+  padding: 6px 12px;
+  border-radius: var(--border-radius-small);
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inline-file-select-btn:hover {
+  background-color: rgba(0, 210, 255, 0.1);
+}
+
+.thumbnail-preview-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.thumbnail-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background-color: #0d1b2a;
+  border: 1.5px solid var(--color-cyan);
+  border-radius: var(--border-radius-small);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-color-cyan);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.thumbnail-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background-color: var(--color-cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 4px var(--color-cyan-glow);
+}
+
+.btn-change-image {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: #0d1b2a;
+  border: 1.5px solid rgba(0, 210, 255, 0.5);
+  color: var(--text-color-cyan);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-change-image:hover {
+  background-color: var(--color-cyan);
+  color: var(--bg-color-main);
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 12px var(--color-cyan-glow);
+}
+
+/* 緑色のステータスボタン */
+.btn-status-green {
+  background-color: var(--color-status-green);
+  border: 1.5px solid var(--color-status-green);
+  color: #101929;
+  padding: 10px 32px;
+  font-size: 15px;
+  font-weight: bold;
+  border-radius: var(--border-radius-medium);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 230, 118, 0.2);
+  transition: all 0.2s;
+  text-align: center;
+  display: inline-block;
+}
+
+.btn-status-green:hover {
+  background-color: #00ff88;
+  border-color: #00ff88;
+  box-shadow: 0 0 12px rgba(0, 230, 118, 0.4);
 }
