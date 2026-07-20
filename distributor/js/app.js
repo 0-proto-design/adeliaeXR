@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const allTab = document.createElement('button');
       allTab.className = `content-tab-btn ${activeCategoryFilter === 'all' ? 'active' : ''}`;
-      allTab.textContent = '全て';
+      allTab.textContent = 'すべて';
       allTab.addEventListener('click', () => {
         activeCategoryFilter = 'all';
         renderCategories();
@@ -521,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const allTab = document.createElement('button');
       allTab.className = `content-tab-btn ${activeManageCategoryFilter === 'all' ? 'active' : ''}`;
-      allTab.textContent = '全て';
+      allTab.textContent = 'すべて';
       allTab.addEventListener('click', () => {
         activeManageCategoryFilter = 'all';
         renderManageCategories();
@@ -845,7 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const allTab = document.createElement('button');
       allTab.className = 'content-tab-btn active';
       allTab.dataset.category = 'all';
-      allTab.textContent = '全て';
+      allTab.textContent = 'すべて';
       syncCategoryTabs.appendChild(allTab);
 
       categories.forEach(cat => {
@@ -1501,10 +1501,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // タブを構築
       modalCategoryTabs.innerHTML = '';
 
-      // 「全て」タブ
+      // 「すべて」タブ
       const allTab = document.createElement('button');
       allTab.className = 'content-tab-btn active';
-      allTab.textContent = '全て';
+      allTab.textContent = 'すべて';
       allTab.addEventListener('click', () => {
         activeTabId = 'all';
         modalCategoryTabs.querySelectorAll('.content-tab-btn').forEach(b => b.classList.remove('active'));

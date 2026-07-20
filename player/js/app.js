@@ -19,6 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // イマーシブ・シアターモーダルのDOM
   const theaterModal = document.getElementById('theaterModal');
   const theaterScreen = document.getElementById('theaterScreen');
+  const theaterVideo = document.getElementById('theaterVideo');
+  const theaterPlayPauseBtn = document.getElementById('theaterPlayPauseBtn');
+  const theaterTimeDisplay = document.getElementById('theaterTimeDisplay');
+  const theaterSeekBar = document.getElementById('theaterSeekBar');
   const closeTheaterBtn = document.getElementById('closeTheaterBtn');
 
   // VRコントロールパネルのDOM
@@ -30,10 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const moveRightBtn = document.getElementById('moveRightBtn');
   const moveDownBtn = document.getElementById('moveDownBtn');
 
-  const rotateUpBtn = document.getElementById('rotateUpBtn');
   const rotateLeftBtn = document.getElementById('rotateLeftBtn');
   const rotateRightBtn = document.getElementById('rotateRightBtn');
-  const rotateDownBtn = document.getElementById('rotateDownBtn');
 
   const resetViewBtn = document.getElementById('resetViewBtn');
 
@@ -45,8 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let zoomLevel = 1.0;
   let moveX = 0;
   let moveY = 0;
-  let rotateX = 0;
-  let rotateY = 0;
+  let rotateZ = 0; // 画面回転用
   let isDragging = false;
   let startDragX = 0;
   let startDragY = 0;
@@ -171,13 +172,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prevMovieBtn');
     const nextBtn = document.getElementById('nextMovieBtn');
 
+    // フォーカス状態を解除し、アクティブ色残りを防止
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+
     if (currentCardIndex > 0) {
       const prevCard = visibleCards[currentCardIndex - 1];
       document.getElementById('prevMovieThumb').src = prevCard.getAttribute('data-image');
       document.getElementById('prevMovieTitle').textContent = prevCard.getAttribute('data-title');
       prevBtn.style.visibility = 'visible';
       prevBtn.style.pointerEvents = 'auto';
-      prevBtn.onclick = () => showDetailModal(prevCard);
+      prevBtn.onclick = (e) => {
+        if (e && e.currentTarget) e.currentTarget.blur();
+        showDetailModal(prevCard);
+      };
     } else {
       prevBtn.style.visibility = 'hidden';
       prevBtn.style.pointerEvents = 'none';
@@ -189,7 +198,10 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('nextMovieTitle').textContent = nextCard.getAttribute('data-title');
       nextBtn.style.visibility = 'visible';
       nextBtn.style.pointerEvents = 'auto';
-      nextBtn.onclick = () => showDetailModal(nextCard);
+      nextBtn.onclick = (e) => {
+        if (e && e.currentTarget) e.currentTarget.blur();
+        showDetailModal(nextCard);
+      };
     } else {
       nextBtn.style.visibility = 'hidden';
       nextBtn.style.pointerEvents = 'none';
@@ -200,23 +212,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // 【イマーシブ・シアター（新しいVR操作盤）の制御】
   // ==========================================
   const updateViewportTransform = () => {
-    // ZOOM (拡大) & MOVE (移動)
-    theaterScreen.style.transform = `scale(${zoomLevel}) translate(${moveX}px, ${moveY}px)`;
-    // ROTATE (回転 - パノラマの background-position をシフト)
-    theaterScreen.style.backgroundPosition = `calc(50% + ${rotateX}px) calc(50% + ${rotateY}px)`;
+    // ZOOM (拡大) & MOVE (移動) & ROTATE (画面回転)
+    theaterScreen.style.transform = `scale(${zoomLevel}) translate(${moveX}px, ${moveY}px) rotate(${rotateZ}deg)`;
   };
 
   const resetViewport = () => {
     zoomLevel = 1.0;
     moveX = 0;
     moveY = 0;
-    rotateX = 0;
-    rotateY = 0;
+    rotateZ = 0;
     updateViewportTransform();
-    
-    if (activeMovie && activeMovie.type.includes('360')) {
-      theaterScreen.style.animation = 'panoramaScroll 60s linear infinite';
-    }
   };
 
   const stopAutoScroll = () => {
@@ -226,17 +231,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const openTheater = () => {
     if (!activeMovie) return;
 
-    const is360 = activeMovie.type.includes('360');
-    theaterScreen.style.backgroundImage = `url('${activeMovie.image}')`;
-
     resetViewport();
 
-    if (is360) {
-      theaterScreen.classList.add('panorama-active');
-      theaterScreen.style.backgroundSize = '200% 100%';
-    } else {
-      theaterScreen.classList.remove('panorama-active');
-      theaterScreen.style.backgroundSize = 'cover';
+    // 動画タイトルの設定
+    const theaterVideoTitle = document.getElementById('theaterVideoTitle');
+    if (theaterVideoTitle) {
+      theaterVideoTitle.textContent = activeMovie.title;
+    }
+
+    // 動画の設定と再生
+    if (theaterVideo) {
+      theaterVideo.src = activeMovie.video;
+      theaterVideo.play().then(() => {
+        updatePlayPauseUI(false);
+      }).catch(e => console.log('Autoplay prevented', e));
     }
 
     theaterModal.style.display = 'flex';
@@ -245,12 +253,88 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 10);
   };
 
+  // ビデオコントロールUIの更新
+  const updatePlayPauseUI = (isPaused) => {
+    if (!theaterPlayPauseBtn) return;
+    const playIcon = theaterPlayPauseBtn.querySelector('.play-icon');
+    const pauseIcon = theaterPlayPauseBtn.querySelector('.pause-icon');
+    if (isPaused) {
+      if (playIcon) playIcon.style.display = 'block';
+      if (pauseIcon) pauseIcon.style.display = 'none';
+    } else {
+      if (playIcon) playIcon.style.display = 'none';
+      if (pauseIcon) pauseIcon.style.display = 'block';
+    }
+  };
+
+  // 時間のフォーマット (MM:SS)
+  const formatTime = (time) => {
+    if (isNaN(time)) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // ビデオのイベントリスナー
+  if (theaterVideo) {
+    theaterVideo.addEventListener('timeupdate', () => {
+      if (theaterTimeDisplay) {
+        theaterTimeDisplay.textContent = `${formatTime(theaterVideo.currentTime)} / ${formatTime(theaterVideo.duration)}`;
+      }
+      if (theaterSeekBar && theaterVideo.duration) {
+        theaterSeekBar.value = (theaterVideo.currentTime / theaterVideo.duration) * 100;
+      }
+    });
+
+    theaterVideo.addEventListener('loadedmetadata', () => {
+      if (theaterTimeDisplay) {
+        theaterTimeDisplay.textContent = `0:00 / ${formatTime(theaterVideo.duration)}`;
+      }
+      if (theaterSeekBar) {
+        theaterSeekBar.value = 0;
+      }
+    });
+
+    theaterVideo.addEventListener('ended', () => {
+      updatePlayPauseUI(true);
+    });
+  }
+
+  // 再生/一時停止ボタンのイベント
+  if (theaterPlayPauseBtn) {
+    theaterPlayPauseBtn.addEventListener('click', () => {
+      if (theaterVideo) {
+        if (theaterVideo.paused) {
+          theaterVideo.play();
+          updatePlayPauseUI(false);
+        } else {
+          theaterVideo.pause();
+          updatePlayPauseUI(true);
+        }
+      }
+    });
+  }
+
+  // シークバーのイベント
+  if (theaterSeekBar) {
+    theaterSeekBar.addEventListener('input', (e) => {
+      if (theaterVideo && theaterVideo.duration) {
+        const time = (e.target.value / 100) * theaterVideo.duration;
+        theaterVideo.currentTime = time;
+      }
+    });
+  }
+
   const closeTheater = () => {
     theaterModal.classList.remove('active');
+    
+    if (theaterVideo) {
+      theaterVideo.pause();
+      theaterVideo.src = '';
+    }
+
     setTimeout(() => {
       theaterModal.style.display = 'none';
-      theaterScreen.style.backgroundImage = '';
-      theaterScreen.classList.remove('panorama-active');
     }, 400);
   };
 
@@ -308,6 +392,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (headerCloseBtn) headerCloseBtn.addEventListener('click', hideDetailModal);
   playTriggerBtn.addEventListener('click', openTheater);
   closeTheaterBtn.addEventListener('click', closeTheater);
+  const theaterHeaderCloseBtn = document.getElementById('theaterHeaderCloseBtn');
+  if (theaterHeaderCloseBtn) theaterHeaderCloseBtn.addEventListener('click', closeTheater);
 
   // 詳細モーダルの外側（オーバーレイ）をクリックして閉じる
   detailModal.addEventListener('click', (e) => {
@@ -357,34 +443,25 @@ document.addEventListener('DOMContentLoaded', () => {
     updateViewportTransform();
   });
 
-  // ROTATE ボタンイベント
-  rotateUpBtn.addEventListener('click', () => {
-    stopAutoScroll();
-    rotateY -= 20;
-    updateViewportTransform();
-  });
-  rotateDownBtn.addEventListener('click', () => {
-    stopAutoScroll();
-    rotateY += 20;
-    updateViewportTransform();
-  });
-  rotateLeftBtn.addEventListener('click', () => {
-    stopAutoScroll();
-    rotateX -= 30;
-    updateViewportTransform();
-  });
-  rotateRightBtn.addEventListener('click', () => {
-    stopAutoScroll();
-    rotateX += 30;
-    updateViewportTransform();
-  });
+  // ROTATE ボタンイベント (画面回転)
+  if (rotateLeftBtn) {
+    rotateLeftBtn.addEventListener('click', () => {
+      rotateZ -= 15;
+      updateViewportTransform();
+    });
+  }
+  if (rotateRightBtn) {
+    rotateRightBtn.addEventListener('click', () => {
+      rotateZ += 15;
+      updateViewportTransform();
+    });
+  }
 
   // RESET ボタンイベント
   resetViewBtn.addEventListener('click', resetViewport);
 
-  // 直感的なマウスドラッグ操作
+  // ドラッグ操作（パン移動用）
   theaterScreen.addEventListener('mousedown', (e) => {
-    stopAutoScroll();
     isDragging = true;
     startDragX = e.clientX;
     startDragY = e.clientY;
@@ -395,8 +472,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const deltaX = e.clientX - startDragX;
     const deltaY = e.clientY - startDragY;
     
-    rotateX += deltaX * 0.5;
-    rotateY += deltaY * 0.5;
+    moveX += deltaX;
+    moveY += deltaY;
     
     startDragX = e.clientX;
     startDragY = e.clientY;
@@ -411,7 +488,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // モバイル端末用タッチ操作
   theaterScreen.addEventListener('touchstart', (e) => {
     if (e.touches.length === 1) {
-      stopAutoScroll();
       isDragging = true;
       startDragX = e.touches[0].clientX;
       startDragY = e.touches[0].clientY;
@@ -423,8 +499,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const deltaX = e.touches[0].clientX - startDragX;
     const deltaY = e.touches[0].clientY - startDragY;
     
-    rotateX += deltaX * 0.5;
-    rotateY += deltaY * 0.5;
+    moveX += deltaX;
+    moveY += deltaY;
     
     startDragX = e.touches[0].clientX;
     startDragY = e.touches[0].clientY;
