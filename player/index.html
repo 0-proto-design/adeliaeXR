@@ -21,17 +21,23 @@
     
     <!-- カテゴリ切り替えボタン -->
     <div class="category-filter-bar">
-      <button class="filter-btn active" data-category="all">すべて</button>
-      <button class="filter-btn" data-category="nature">自然</button>
-      <button class="filter-btn" data-category="scenery">景色</button>
+      <button class="filter-btn active" data-category="all">すべて <span class="cat-count">(0)</span></button>
+      <button class="filter-btn" data-category="nature">自然 <span class="cat-count">(0)</span></button>
+      <button class="filter-btn" data-category="scenery">景色 <span class="cat-count">(0)</span></button>
     </div>
 
     <!-- リスト一覧ビュー (常にベースに表示) -->
     <main class="main-content" id="listView">
       
       <!-- 自然カテゴリセクション -->
-      <section class="movie-category-section" id="section-nature">
-        <h2 class="category-title">自然</h2>
+      <section class="movie-category-section" id="section-nature" data-category="nature">
+        <div class="category-header">
+          <h2 class="category-title">自然</h2>
+          <button class="see-all-btn" data-target-category="nature">
+            すべてを見る
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
         <div class="movies-grid">
           
           <!-- サメ映像 -->
@@ -40,22 +46,38 @@
                data-full-title="海中探訪 - サメ of the deep"
                data-desc="サメが来る！"
                data-image="images/nature_shark.jpg" 
+               data-video="images/movies/nature_shark.mp4"
                data-type="Video"
                data-category="自然"
                id="nature-shark">
-            <img src="images/nature_shark.jpg" alt="サメ">
+            <div class="movie-thumbnail-container">
+              <video src="images/movies/nature_shark.mp4" class="thumbnail-video" muted playsinline></video>
+              <div class="video-badge standard">VIDEO</div>
+            </div>
+            <div class="movie-card-title-bar">
+              <span class="movie-card-title">サメ</span>
+              <svg class="card-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>
+            </div>
           </div>
           
           <!-- 恐竜映像 -->
           <div class="movie-card" 
                data-title="恐竜" 
                data-full-title="古代ジャングル - T-Rexの足跡"
-               data-desc="恐竜が吠える！恐ろしい古代の王者が目の前に現れます。"
+               data-desc="恐竜が吠える！恐ろしい古代の王者が目の前に现れます。"
                data-image="images/nature_dinosaur.jpg" 
+               data-video="images/movies/nature_dinosaur.mp4"
                data-type="Video"
                data-category="自然"
                id="nature-dinosaur">
-            <img src="images/nature_dinosaur.jpg" alt="恐竜">
+            <div class="movie-thumbnail-container">
+              <video src="images/movies/nature_dinosaur.mp4" class="thumbnail-video" muted playsinline></video>
+              <div class="video-badge standard">VIDEO</div>
+            </div>
+            <div class="movie-card-title-bar">
+              <span class="movie-card-title">恐竜</span>
+              <svg class="card-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>
+            </div>
           </div>
           
           <!-- 水田映像 (360度) -->
@@ -64,19 +86,52 @@
                data-full-title="日本の棚田 - ドローン空撮 360°"
                data-desc="ドローンによる水田空撮。360度見渡す限りのどかな棚田風景が広がります。"
                data-image="images/nature_paddy.jpg" 
+               data-video="images/movies/nature_paddy.mp4"
                data-type="360° Video"
                data-category="自然"
                id="nature-paddy">
-            <img src="images/nature_paddy.jpg" alt="棚田">
-            <div class="badge-360">360° VR</div>
+            <div class="movie-thumbnail-container">
+              <video src="images/movies/nature_paddy.mp4" class="thumbnail-video" muted playsinline></video>
+              <div class="video-badge vr">360° VR</div>
+            </div>
+            <div class="movie-card-title-bar">
+              <span class="movie-card-title">棚田</span>
+              <svg class="card-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>
+            </div>
+          </div>
+          
+          <!-- 深林映像 -->
+          <div class="movie-card" 
+               data-title="深林" 
+               data-full-title="神秘の原生林 - 木漏れ日の散策"
+               data-desc="太陽の光が木々をぬけて差し込む静寂で美しき神秘の森。"
+               data-image="images/nature_forest.jpg" 
+               data-video="images/movies/nature_forest.mp4"
+               data-type="Video"
+               data-category="自然"
+               id="nature-forest">
+            <div class="movie-thumbnail-container">
+              <video src="images/movies/nature_forest.mp4" class="thumbnail-video" muted playsinline></video>
+              <div class="video-badge standard">VIDEO</div>
+            </div>
+            <div class="movie-card-title-bar">
+              <span class="movie-card-title">深林</span>
+              <svg class="card-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>
+            </div>
           </div>
           
         </div>
       </section>
 
       <!-- 景色カテゴリセクション -->
-      <section class="movie-category-section" id="section-scenery">
-        <h2 class="category-title">景色</h2>
+      <section class="movie-category-section" id="section-scenery" data-category="scenery">
+        <div class="category-header">
+          <h2 class="category-title">景色</h2>
+          <button class="see-all-btn" data-target-category="scenery">
+            すべてを見る
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
         <div class="movies-grid">
           
           <!-- ヨット映像 (360度) -->
@@ -85,11 +140,18 @@
                data-full-title="極上リゾート - ヨットクルージング 360°"
                data-desc="ヨットの上から眺める美しい海と島々。360度の開放的なパノラマです。"
                data-image="images/scenery_yacht.jpg" 
+               data-video="images/movies/scenery_yacht.mp4"
                data-type="360° Video"
                data-category="景色"
                id="scenery-yacht">
-            <img src="images/scenery_yacht.jpg" alt="ヨット">
-            <div class="badge-360">360° VR</div>
+            <div class="movie-thumbnail-container">
+              <video src="images/movies/scenery_yacht.mp4" class="thumbnail-video" muted playsinline></video>
+              <div class="video-badge vr">360° VR</div>
+            </div>
+            <div class="movie-card-title-bar">
+              <span class="movie-card-title">ヨット</span>
+              <svg class="card-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>
+            </div>
           </div>
           
           <!-- 滝と虹映像 -->
@@ -98,10 +160,38 @@
                data-full-title="大自然の驚異 - 滝と虹の絶景"
                data-desc="大迫力の滝と、水しぶきの中に架かる鮮やかな虹のコラボレーション。"
                data-image="images/scenery_waterfall.jpg" 
+               data-video="images/movies/scenery_waterfall.mp4"
                data-type="Video"
                data-category="景色"
                id="scenery-waterfall">
-            <img src="images/scenery_waterfall.jpg" alt="滝">
+            <div class="movie-thumbnail-container">
+              <video src="images/movies/scenery_waterfall.mp4" class="thumbnail-video" muted playsinline></video>
+              <div class="video-badge standard">VIDEO</div>
+            </div>
+            <div class="movie-card-title-bar">
+              <span class="movie-card-title">滝</span>
+              <svg class="card-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>
+            </div>
+          </div>
+          
+          <!-- 夕景映像 -->
+          <div class="movie-card" 
+               data-title="夕景" 
+               data-full-title="黄昏の海岸線 - 紫紺の夕焼け"
+               data-desc="海岸線を染める紫と黄金のグラデーションの夕焼け。"
+               data-image="images/scenery_sunset.jpg" 
+               data-video="images/movies/scenery_sunset.mp4"
+               data-type="Video"
+               data-category="景色"
+               id="scenery-sunset">
+            <div class="movie-thumbnail-container">
+              <video src="images/movies/scenery_sunset.mp4" class="thumbnail-video" muted playsinline></video>
+              <div class="video-badge standard">VIDEO</div>
+            </div>
+            <div class="movie-card-title-bar">
+              <span class="movie-card-title">夕景</span>
+              <svg class="card-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>
+            </div>
           </div>
           
         </div>
@@ -112,31 +202,70 @@
     <!-- 詳細表示モーダル (初期状態は非表示) -->
     <div class="detail-modal-overlay" id="detailModal" style="display: none;">
       <div class="detail-modal-container" id="detailModalContainer">
-        <!-- 戻る（閉じる）ボタン -->
-        <button class="back-btn" id="backBtn" aria-label="閉じる">←</button>
+        <!-- 上部ヘッダータイトル＆閉じるボタン (distributorモーダルデザイン準拠) -->
+        <div class="popup-header">
+          <span class="popup-title">動画の詳細</span>
+          <button class="vmodal-close-btn popup-close-btn" id="headerCloseBtn" aria-label="閉じる">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
         
-        <div class="detail-grid">
-          <!-- 左カラム: プレビュー -->
-          <div class="detail-preview-col">
-            <div class="cinema-preview">
-              <img src="" id="detailImage" alt="プレビュー画像">
+        <div class="popup-content">
+          <div class="detail-grid">
+            <!-- 左カラム: プレビュー -->
+            <div class="detail-preview-col">
+              <div class="cinema-preview">
+                <video src="" id="detailVideo" class="thumbnail-video" muted playsinline></video>
+              </div>
+              
+              <!-- 前/次への動画ナビゲーション -->
+              <div class="modal-nav-container">
+                <button class="modal-nav-btn prev-nav-btn" id="prevMovieBtn">
+                  <svg class="nav-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="14 8 8 12 14 16 14 8" fill="currentColor"></polygon></svg>
+                  <div class="nav-thumbnail">
+                    <img src="" id="prevMovieThumb" alt="前">
+                  </div>
+                  <div class="nav-info">
+                    <span class="nav-label">前へ</span>
+                    <span class="nav-title" id="prevMovieTitle">タイトル</span>
+                  </div>
+                </button>
+                <button class="modal-nav-btn next-nav-btn" id="nextMovieBtn">
+                  <div class="nav-info">
+                    <span class="nav-label">次へ</span>
+                    <span class="nav-title" id="nextMovieTitle">タイトル</span>
+                  </div>
+                  <div class="nav-thumbnail">
+                    <img src="" id="nextMovieThumb" alt="次">
+                  </div>
+                  <svg class="nav-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>
+                </button>
+              </div>
             </div>
-          </div>
-          
-          <!-- 右カラム: 情報 -->
-          <div class="detail-info-col">
-            <h1 class="detail-title" id="detailTitleText">タイトル</h1>
             
-            <div class="desc-box">
-              <p id="detailDescText">説明文</p>
+            <!-- 右カラム: 情報 -->
+            <div class="detail-info-col">
+              <h1 class="detail-title" id="detailTitleText">タイトル</h1>
+              
+              <div class="desc-box">
+                <p id="detailDescText">説明文</p>
+              </div>
+              
+              <div class="meta-row">
+                <span class="meta-item">タイプ：<strong id="detailTypeText">Video</strong></span>
+                <span class="meta-item">カテゴリー：<strong id="detailCategoryText">自然</strong></span>
+              </div>
+              
+              <div class="modal-actions-row">
+                <button class="modal-close-action-btn" id="backBtn">閉じる</button>
+                <button class="play-trigger-btn" id="playTriggerBtn">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  再生
+                </button>
+              </div>
             </div>
-            
-            <div class="meta-row">
-              <span class="meta-item">Type: <strong id="detailTypeText">Video</strong></span>
-              <span class="meta-item">Category: <strong id="detailCategoryText">自然</strong></span>
-            </div>
-            
-            <button class="play-trigger-btn" id="playTriggerBtn">再生</button>
           </div>
         </div>
       </div>

@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 詳細モーダルのDOM
   const detailModal = document.getElementById('detailModal');
   const backBtn = document.getElementById('backBtn');
-  const detailImage = document.getElementById('detailImage');
+  const detailVideo = document.getElementById('detailVideo');
   const detailTitleText = document.getElementById('detailTitleText');
   const detailDescText = document.getElementById('detailDescText');
   const detailTypeText = document.getElementById('detailTypeText');
@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const resetViewBtn = document.getElementById('resetViewBtn');
 
   let activeMovie = null; // 現在選択中の動画データ
+  let visibleCards = [];
+  let currentCardIndex = -1;
   
   // VR表示ステート
   let zoomLevel = 1.0;
@@ -50,42 +52,98 @@ document.addEventListener('DOMContentLoaded', () => {
   let startDragY = 0;
 
   // ==========================================
+  // 【カテゴリ総数の計算・表示更新】
+  // ==========================================
+  const updateCategoryCounts = () => {
+    const totalCardsCount = document.querySelectorAll('.movie-card').length;
+    
+    filterBtns.forEach(btn => {
+      const cat = btn.getAttribute('data-category');
+      let count = 0;
+      if (cat === 'all') {
+        count = totalCardsCount;
+      } else {
+        const sec = document.querySelector(`.movie-category-section[data-category="${cat}"]`);
+        if (sec) {
+          count = sec.querySelectorAll('.movie-card').length;
+        }
+      }
+      
+      const countSpan = btn.querySelector('.cat-count');
+      if (countSpan) {
+        countSpan.textContent = `(${count})`;
+      }
+    });
+  };
+
+  // ==========================================
   // 【カテゴリフィルターの制御】
   // ==========================================
   const filterCategories = (category) => {
-    if (category === 'all') {
-      sectionNature.style.display = 'flex';
-      sectionScenery.style.display = 'flex';
-    } else if (category === 'nature') {
-      sectionNature.style.display = 'flex';
-      sectionScenery.style.display = 'none';
-    } else if (category === 'scenery') {
-      sectionNature.style.display = 'none';
-      sectionScenery.style.display = 'flex';
-    }
+    const sections = document.querySelectorAll('.movie-category-section');
+    
+    sections.forEach(sec => {
+      const secCategory = sec.getAttribute('data-category');
+      const seeAllBtn = sec.querySelector('.see-all-btn');
+      const cards = sec.querySelectorAll('.movie-card');
+
+      if (category === 'all') {
+        sec.style.display = 'flex';
+        if (seeAllBtn) seeAllBtn.classList.remove('hidden');
+        
+        // 「すべて」の時は各カテゴリ最大3件まで表示
+        cards.forEach((card, index) => {
+          if (index < 3) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      } else {
+        if (secCategory === category) {
+          sec.style.display = 'flex';
+          if (seeAllBtn) seeAllBtn.classList.add('hidden');
+          
+          // 特定カテゴリ指定時は全件表示
+          cards.forEach(card => {
+            card.style.display = 'block';
+          });
+        } else {
+          sec.style.display = 'none';
+        }
+      }
+    });
   };
 
   // ==========================================
   // 【詳細モーダルの表示制御】
   // ==========================================
   const showDetailModal = (card) => {
+    // 表示中のカードリストを取得して現在のインデックスを特定
+    visibleCards = Array.from(document.querySelectorAll('.movie-card')).filter(c => c.style.display !== 'none');
+    currentCardIndex = visibleCards.indexOf(card);
+
     // データ抽出
     activeMovie = {
       title: card.getAttribute('data-title'),
       fullTitle: card.getAttribute('data-full-title'),
       desc: card.getAttribute('data-desc'),
       image: card.getAttribute('data-image'),
+      video: card.getAttribute('data-video'),
       type: card.getAttribute('data-type'),
       category: card.getAttribute('data-category')
     };
 
     // 詳細画面DOMの更新
     detailTitleText.textContent = activeMovie.title;
-    detailImage.src = activeMovie.image;
-    detailImage.alt = activeMovie.title;
+    detailVideo.src = activeMovie.video;
+    detailVideo.play().catch(e => console.log(e));
     detailDescText.textContent = activeMovie.desc;
     detailTypeText.textContent = activeMovie.type;
     detailCategoryText.textContent = activeMovie.category;
+
+    // ナビゲーションの更新
+    setupModalNav();
 
     // モーダル表示
     detailModal.style.display = 'flex';
@@ -100,12 +158,42 @@ document.addEventListener('DOMContentLoaded', () => {
   const hideDetailModal = () => {
     detailModal.classList.remove('active');
     document.body.style.overflow = ''; // 背景スクロールを復帰
+    detailVideo.pause();
     
     // アニュアル表示が残らないように非表示
     setTimeout(() => {
       detailModal.style.display = 'none';
       activeMovie = null;
     }, 300);
+  };
+
+  const setupModalNav = () => {
+    const prevBtn = document.getElementById('prevMovieBtn');
+    const nextBtn = document.getElementById('nextMovieBtn');
+
+    if (currentCardIndex > 0) {
+      const prevCard = visibleCards[currentCardIndex - 1];
+      document.getElementById('prevMovieThumb').src = prevCard.getAttribute('data-image');
+      document.getElementById('prevMovieTitle').textContent = prevCard.getAttribute('data-title');
+      prevBtn.style.visibility = 'visible';
+      prevBtn.style.pointerEvents = 'auto';
+      prevBtn.onclick = () => showDetailModal(prevCard);
+    } else {
+      prevBtn.style.visibility = 'hidden';
+      prevBtn.style.pointerEvents = 'none';
+    }
+
+    if (currentCardIndex < visibleCards.length - 1 && currentCardIndex !== -1) {
+      const nextCard = visibleCards[currentCardIndex + 1];
+      document.getElementById('nextMovieThumb').src = nextCard.getAttribute('data-image');
+      document.getElementById('nextMovieTitle').textContent = nextCard.getAttribute('data-title');
+      nextBtn.style.visibility = 'visible';
+      nextBtn.style.pointerEvents = 'auto';
+      nextBtn.onclick = () => showDetailModal(nextCard);
+    } else {
+      nextBtn.style.visibility = 'hidden';
+      nextBtn.style.pointerEvents = 'none';
+    }
   };
 
   // ==========================================
@@ -179,12 +267,45 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // 「すべてを見る」ボタンクリックイベント
+  const seeAllBtns = document.querySelectorAll('.see-all-btn');
+  seeAllBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const targetCat = btn.getAttribute('data-target-category');
+      
+      // 該当のカテゴリボタンをアクティブにする
+      filterBtns.forEach(b => {
+        if (b.getAttribute('data-category') === targetCat) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+      
+      // 対象カテゴリの一覧表示へ切り替え
+      filterCategories(targetCat);
+      
+      // スムーズスクロールで該当カテゴリへ導く
+      const targetSec = document.querySelector(`.movie-category-section[data-category="${targetCat}"]`);
+      if (targetSec) {
+        targetSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // 初期化：カテゴリ件数計算＆「すべて」状態での3件制限適用
+  updateCategoryCounts();
+  filterCategories('all');
+
   // 動画カードクリックイベント
   movieCards.forEach(card => {
     card.addEventListener('click', () => showDetailModal(card));
   });
 
-  backBtn.addEventListener('click', hideDetailModal);
+  if (backBtn) backBtn.addEventListener('click', hideDetailModal);
+  const headerCloseBtn = document.getElementById('headerCloseBtn');
+  if (headerCloseBtn) headerCloseBtn.addEventListener('click', hideDetailModal);
   playTriggerBtn.addEventListener('click', openTheater);
   closeTheaterBtn.addEventListener('click', closeTheater);
 
@@ -314,4 +435,22 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('touchend', () => {
     isDragging = false;
   });
+
+  // ==========================================
+  // 【動画サムネイルの5秒ループ再生制御】
+  // ==========================================
+  const setupThumbnailLoop = (video) => {
+    video.addEventListener('timeupdate', () => {
+      // 5秒経過したら最初に戻す
+      if (video.currentTime >= 5) {
+        video.currentTime = 0;
+        video.play().catch(e => console.log('Autoplay prevented', e));
+      }
+    });
+    // 初期状態でも再生を試みる
+    video.play().catch(e => console.log('Autoplay prevented', e));
+  };
+
+  // 一覧の全サムネイルと詳細モーダルのサムネイルに適用
+  document.querySelectorAll('.thumbnail-video').forEach(setupThumbnailLoop);
 });
