@@ -1301,3 +1301,148 @@ body:has(.sync-execute-container) .main-content {
   border-color: #00ff88;
   box-shadow: 0 0 12px rgba(0, 230, 118, 0.4);
 }
+
+/* =========================================
+   認証・アカウント管理画面用レイアウト (Auth Screens)
+   ========================================= */
+.auth-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--bg-color-main);
+  padding: 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--bg-color-card);
+  border: 1.5px solid var(--color-cyan);
+  border-radius: var(--border-radius-large);
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 0 20px rgba(0, 210, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.auth-logo {
+  color: var(--text-color-cyan);
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.auth-title {
+  color: var(--text-color-primary);
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.auth-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-label {
+  color: var(--text-color-secondary);
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: var(--bg-color-main);
+  border: 1.5px solid rgba(146, 154, 166, 0.3);
+  border-radius: var(--border-radius-small);
+  color: var(--text-color-primary);
+  font-size: 15px;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.auth-input:focus {
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 8px var(--color-cyan-glow);
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--color-cyan);
+  color: var(--bg-color-main);
+  border: none;
+  border-radius: var(--border-radius-small);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 10px var(--color-cyan-glow);
+  margin-top: 8px;
+}
+
+.auth-btn:hover {
+  background-color: var(--color-cyan-hover);
+  box-shadow: 0 0 16px var(--color-cyan-glow);
+}
+
+.auth-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.auth-link {
+  color: var(--text-color-cyan);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+.account-info-group {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(146, 154, 166, 0.2);
+  border-radius: var(--border-radius-small);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.account-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.account-info-row:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.account-info-label {
+  color: var(--text-color-secondary);
+  font-size: 13px;
+}
+
+.account-info-value {
+  color: var(--text-color-primary);
+  font-size: 15px;
+  font-weight: 500;
+}

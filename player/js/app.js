@@ -513,6 +513,38 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================
+  // 【テーマカラーテスト（仮）機能】
+  // ==========================================
+  const themeBtns = document.querySelectorAll('.theme-btn');
+  const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 210, 255';
+  };
+
+  themeBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const color = e.target.getAttribute('data-color');
+      const rgb = hexToRgb(color);
+      
+      const root = document.documentElement;
+      root.style.setProperty('--theme-rgb', rgb);
+      root.style.setProperty('--color-cyan', color);
+      root.style.setProperty('--color-cyan-bg', `rgba(${rgb}, 0.15)`);
+      root.style.setProperty('--color-cyan-glow', `rgba(${rgb}, 0.4)`);
+      root.style.setProperty('--color-cyan-glow-strong', `rgba(${rgb}, 0.8)`);
+      root.style.setProperty('--border-cyan-thin', `1px solid rgba(${rgb}, 0.3)`);
+      
+      // ボタンの見た目調整（選択中の色を分かりやすく）
+      themeBtns.forEach(b => {
+        b.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        b.style.transform = 'scale(1)';
+      });
+      e.target.style.borderColor = '#fff';
+      e.target.style.transform = 'scale(1.1)';
+    });
+  });
+
+  // ==========================================
   // 【動画サムネイルの5秒ループ再生制御】
   // ==========================================
   const setupThumbnailLoop = (video) => {

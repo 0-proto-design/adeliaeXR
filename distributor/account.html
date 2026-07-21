@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アカウント情報 | adeliaeXR</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/components/app-header.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <div class="app-container" style="min-height: 100vh; display: flex; flex-direction: column;">
+    <app-header active-tab="none" alert-count="1" hide-title="true"></app-header>
+    
+    <main class="main-content" style="flex: 1; display: flex; justify-content: center; align-items: center;">
+      <div class="auth-card" style="margin: 0; transform: translateY(-10%);">
+        <div class="auth-header">
+          <h1 class="auth-title">アカウント情報</h1>
+        </div>
+        
+        <div class="account-info-group">
+          <div class="account-info-row">
+            <span class="account-info-label">名前</span>
+            <span class="account-info-value" id="displayName">管理者ユーザー</span>
+          </div>
+          <div class="account-info-row">
+            <span class="account-info-label">メールアドレス</span>
+            <span class="account-info-value">admin@adeliaexr.com</span>
+          </div>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
+          <button id="openNameModalBtn" class="auth-btn" style="text-align: center; display: block; box-sizing: border-box; background-color: var(--bg-color-card); border: 1.5px solid var(--color-cyan); color: var(--text-color-cyan);">名前を変更</button>
+          <button id="openEmailModalBtn" class="auth-btn" style="text-align: center; display: block; box-sizing: border-box; background-color: var(--bg-color-card); border: 1.5px solid var(--color-cyan); color: var(--text-color-cyan);">メールアドレスを変更</button>
+          <button id="openPasswordModalBtn" class="auth-btn" style="text-align: center; display: block; box-sizing: border-box; background-color: var(--bg-color-card); border: 1.5px solid var(--color-cyan); color: var(--text-color-cyan);">パスワードを変更</button>
+        </div>
+        
+        <div class="auth-links" style="margin-top: 24px;">
+          <a href="login.html" class="auth-link" style="color: var(--color-status-red); font-weight: bold;">ログアウト</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- 名前変更モーダル -->
+    <div class="video-select-modal" id="nameChangeModal" style="display: none;">
+      <div class="popup-overlay" id="nameModalOverlay"></div>
+      <div class="video-select-wrapper" style="max-width: 440px; height: auto;">
+        <div class="video-select-header">
+          <div class="video-select-title">名前を変更</div>
+          <button class="vmodal-close-btn" id="nameModalCloseBtn">&times;</button>
+        </div>
+        <div style="padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+          <div class="auth-form-group">
+            <label class="auth-label" for="new-name">新しい名前</label>
+            <input type="text" id="new-name" class="auth-input" placeholder="山田 太郎" required>
+          </div>
+        </div>
+        <div class="vmodal-footer" style="justify-content: center;">
+          <div style="display: flex; gap: 8px;">
+            <button class="add-category-btn vmodal-cancel-btn" id="nameModalCancelBtn" style="padding: 8px 16px; font-size: 14px;">キャンセル</button>
+            <button class="new-register-btn" id="saveNameBtn" style="padding: 8px 24px; font-size: 14px;">変更を保存する</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- メールアドレス変更モーダル -->
+    <div class="video-select-modal" id="emailChangeModal" style="display: none;">
+      <div class="popup-overlay" id="emailModalOverlay"></div>
+      <div class="video-select-wrapper" style="max-width: 440px; height: auto;">
+        <div class="video-select-header">
+          <div class="video-select-title">メールアドレス変更</div>
+          <button class="vmodal-close-btn" id="emailModalCloseBtn">&times;</button>
+        </div>
+        <div style="padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+          <div class="auth-form-group">
+            <label class="auth-label" for="new-email">新しいメールアドレス</label>
+            <input type="email" id="new-email" class="auth-input" placeholder="new@adeliaexr.com" required>
+          </div>
+        </div>
+        <div class="vmodal-footer" style="justify-content: center;">
+          <div style="display: flex; gap: 8px;">
+            <button class="add-category-btn vmodal-cancel-btn" id="emailModalCancelBtn" style="padding: 8px 16px; font-size: 14px;">キャンセル</button>
+            <button class="new-register-btn" id="saveEmailBtn" style="padding: 8px 24px; font-size: 14px;">変更を保存する</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- パスワード変更モーダル -->
+    <div class="video-select-modal" id="passwordChangeModal" style="display: none;">
+      <div class="popup-overlay" id="passwordModalOverlay"></div>
+      <div class="video-select-wrapper" style="max-width: 440px; height: auto;">
+        <div class="video-select-header">
+          <div class="video-select-title">パスワード変更</div>
+          <button class="vmodal-close-btn" id="passwordModalCloseBtn">&times;</button>
+        </div>
+        <div style="padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+          <div class="auth-form-group">
+            <label class="auth-label" for="current-password">現在のパスワード</label>
+            <input type="password" id="current-password" class="auth-input" placeholder="••••••••" required>
+          </div>
+          <div class="auth-form-group">
+            <label class="auth-label" for="new-password">新しいパスワード</label>
+            <input type="password" id="new-password" class="auth-input" placeholder="••••••••" required>
+          </div>
+          <div class="auth-form-group">
+            <label class="auth-label" for="confirm-password">新しいパスワード（確認）</label>
+            <input type="password" id="confirm-password" class="auth-input" placeholder="••••••••" required>
+          </div>
+        </div>
+        <div class="vmodal-footer" style="justify-content: center;">
+          <div style="display: flex; gap: 8px;">
+            <button class="add-category-btn vmodal-cancel-btn" id="passwordModalCancelBtn" style="padding: 8px 16px; font-size: 14px;">キャンセル</button>
+            <button class="new-register-btn" id="savePasswordBtn" style="padding: 8px 24px; font-size: 14px;">変更を保存する</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // モーダル制御スクリプト
+    document.addEventListener('DOMContentLoaded', () => {
+      const nameModal = document.getElementById('nameChangeModal');
+      const emailModal = document.getElementById('emailChangeModal');
+      const passwordModal = document.getElementById('passwordChangeModal');
+      
+      const openNameBtn = document.getElementById('openNameModalBtn');
+      const openEmailBtn = document.getElementById('openEmailModalBtn');
+      const openPasswordBtn = document.getElementById('openPasswordModalBtn');
+      
+      const nameCloseBtn = document.getElementById('nameModalCloseBtn');
+      const nameCancelBtn = document.getElementById('nameModalCancelBtn');
+      const nameOverlay = document.getElementById('nameModalOverlay');
+      const saveNameBtn = document.getElementById('saveNameBtn');
+
+      const emailCloseBtn = document.getElementById('emailModalCloseBtn');
+      const emailCancelBtn = document.getElementById('emailModalCancelBtn');
+      const emailOverlay = document.getElementById('emailModalOverlay');
+      const saveEmailBtn = document.getElementById('saveEmailBtn');
+      
+      const passwordCloseBtn = document.getElementById('passwordModalCloseBtn');
+      const passwordCancelBtn = document.getElementById('passwordModalCancelBtn');
+      const passwordOverlay = document.getElementById('passwordModalOverlay');
+      const savePasswordBtn = document.getElementById('savePasswordBtn');
+
+      const closeAllModals = () => {
+        nameModal.style.display = 'none';
+        emailModal.style.display = 'none';
+        passwordModal.style.display = 'none';
+      };
+
+      // Name Modal
+      openNameBtn.addEventListener('click', () => {
+        nameModal.style.display = 'flex';
+        document.getElementById('new-name').value = document.getElementById('displayName').textContent;
+      });
+      [nameCloseBtn, nameCancelBtn, nameOverlay].forEach(el => {
+        if(el) el.addEventListener('click', closeAllModals);
+      });
+      saveNameBtn.addEventListener('click', () => {
+        const newName = document.getElementById('new-name').value;
+        if(newName) {
+          document.getElementById('displayName').textContent = newName;
+          
+          // ヘッダーのアカウント名も更新する
+          const headerAccountName = document.querySelector('.header-account-name');
+          if(headerAccountName) {
+            headerAccountName.textContent = newName;
+          }
+          
+          alert('名前を変更しました。');
+          closeAllModals();
+        }
+      });
+
+      // Email Modal
+      openEmailBtn.addEventListener('click', () => {
+        emailModal.style.display = 'flex';
+      });
+      [emailCloseBtn, emailCancelBtn, emailOverlay].forEach(el => {
+        if(el) el.addEventListener('click', closeAllModals);
+      });
+      saveEmailBtn.addEventListener('click', () => {
+        alert('メールアドレスを変更しました。');
+        closeAllModals();
+      });
+
+      // Password Modal
+      openPasswordBtn.addEventListener('click', () => {
+        passwordModal.style.display = 'flex';
+      });
+      [passwordCloseBtn, passwordCancelBtn, passwordOverlay].forEach(el => {
+        if(el) el.addEventListener('click', closeAllModals);
+      });
+      savePasswordBtn.addEventListener('click', () => {
+        alert('パスワードを変更しました。');
+        closeAllModals();
+      });
+    });
+  </script>
+</body>
+</html>

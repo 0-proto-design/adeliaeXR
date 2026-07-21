@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アカウント作成 | adeliaeXR</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <span class="auth-logo">adeliaeXR</span>
+        <h1 class="auth-title">アカウント作成</h1>
+      </div>
+      
+      <form action="index.html" method="GET" style="display: flex; flex-direction: column; gap: 24px;">
+        <div class="auth-form-group">
+          <label class="auth-label" for="name">名前</label>
+          <input type="text" id="name" class="auth-input" placeholder="山田 太郎" required>
+        </div>
+        
+        <div class="auth-form-group">
+          <label class="auth-label" for="email">メールアドレス</label>
+          <input type="email" id="email" class="auth-input" placeholder="example@adeliaexr.com" required>
+        </div>
+        
+        <div class="auth-form-group">
+          <label class="auth-label" for="password">パスワード</label>
+          <input type="password" id="password" class="auth-input" placeholder="••••••••" required>
+        </div>
+        
+        <button type="submit" class="auth-btn">アカウントを作成</button>
+      </form>
+      
+      <div class="auth-links">
+        <a href="login.html" class="auth-link">すでにアカウントをお持ちの方はこちら</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

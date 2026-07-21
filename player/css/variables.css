@@ -6,11 +6,12 @@
   --bg-color-camera: #08090d;     /* 監視カメラプレビュー枠の背景 */
   
   /* アクセントカラー */
+  --theme-rgb: 0, 210, 255;       /* メインテーマのRGB値 */
   --color-cyan: #00d2ff;          /* シアン（メインの枠線、ボタン、強調テキスト） */
-  --color-cyan-glow: rgba(0, 210, 255, 0.4);
-  --color-cyan-hover: #00a4cc;
-  --color-cyan-bg: rgba(0, 210, 255, 0.08);
-  --color-cyan-active: #008cb0;
+  --color-cyan-glow: rgba(var(--theme-rgb), 0.4);
+  --color-cyan-hover: rgba(var(--theme-rgb), 0.8);
+  --color-cyan-bg: rgba(var(--theme-rgb), 0.08);
+  --color-cyan-active: rgba(var(--theme-rgb), 0.6);
   
   /* ステータスカラー */
   --color-status-green: #00e676;  /* 正常稼働中（グリーン） */
@@ -23,7 +24,7 @@
   /* テキストカラー */
   --text-color-primary: #ffffff;  /* プライマリテキスト（白） */
   --text-color-secondary: #929aa6;/* セカンダリテキスト（ニュートラルグレー） */
-  --text-color-cyan: #00d2ff;     /* シアンテキスト */
+  --text-color-cyan: var(--color-cyan); /* シアンテキスト */
   --text-color-orange: #ff9800;   /* オレンジ（注記など） */
   
   /* 共通スタイル */
@@ -31,8 +32,8 @@
   --border-radius-medium: 6px;
   --border-radius-small: 4px;
   
-  --border-cyan-thin: 1px solid rgba(0, 210, 255, 0.3);
-  --border-cyan-medium: 2px solid #00d2ff;
+  --border-cyan-thin: 1px solid rgba(var(--theme-rgb), 0.3);
+  --border-cyan-medium: 2px solid var(--color-cyan);
   
   /* フォント */
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

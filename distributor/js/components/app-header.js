@@ -23,6 +23,7 @@ class AppHeader extends HTMLElement {
     const pageTitle = this.getAttribute('page-title') || '設置現場 監視';
     const breadcrumbsAttr = this.getAttribute('breadcrumbs');
     const buildingId = this.getAttribute('building-id');
+    const hideTitle = this.getAttribute('hide-title') === 'true';
 
     let breadcrumbsHTML = '';
     if (breadcrumbsAttr) {
@@ -53,8 +54,8 @@ class AppHeader extends HTMLElement {
 
         /* メインのヘッダー行（ロゴ、タブ、アラートバッジ） */
         .header-main-row {
-          display: flex;
-          justify-content: space-between;
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
           align-items: center;
           width: 100%;
           padding: 8px 4px 16px 4px;
@@ -65,7 +66,7 @@ class AppHeader extends HTMLElement {
         .header-brand {
           display: flex;
           align-items: center;
-          width: 150px; /* 左右の幅を揃えて中央寄せの精度を上げる */
+          justify-content: flex-start;
         }
 
         .header-brand .brand-logo {
@@ -80,7 +81,6 @@ class AppHeader extends HTMLElement {
           display: flex;
           justify-content: center;
           gap: 16px;
-          flex: 1;
         }
 
         .tab-btn {
@@ -113,12 +113,12 @@ class AppHeader extends HTMLElement {
           box-shadow: 0 0 10px var(--color-cyan-glow);
         }
 
-        /* 右端：アラートエリア */
-        .header-alert-wrapper {
+        /* 右端：アクションエリア（アラート、アカウント） */
+        .header-right-actions {
           display: flex;
           justify-content: flex-end;
           align-items: center;
-          width: 160px; /* 左右の幅を揃えて中央寄せの精度を上げる */
+          gap: 16px;
         }
 
         .header-alert-badge {
@@ -148,6 +148,39 @@ class AppHeader extends HTMLElement {
           font-weight: 900;
           font-size: 14px;
           line-height: 1;
+        }
+
+        /* アカウント情報ボタン */
+        .header-account-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--text-color-primary);
+          text-decoration: none;
+          padding: 6px 12px;
+          border-radius: var(--border-radius-medium);
+          transition: background-color 0.2s;
+        }
+
+        .header-account-btn:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .header-account-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background-color: rgba(0, 210, 255, 0.15);
+          color: var(--text-color-cyan);
+          border: 1px solid var(--color-cyan);
+        }
+
+        .header-account-name {
+          font-size: 14px;
+          font-weight: 500;
         }
 
         /* ヘッダー下：ページタイトルエリア */
@@ -263,8 +296,8 @@ class AppHeader extends HTMLElement {
             </a>
           </div>
           
-          <!-- 右：アラートバッジ -->
-          <div class="header-alert-wrapper">
+          <!-- 右：アクションエリア（アラートバッジ ＆ アカウント） -->
+          <div class="header-right-actions">
             <div class="header-alert-badge">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
@@ -273,9 +306,20 @@ class AppHeader extends HTMLElement {
               </svg>
               通信エラー：<span class="header-alert-count">${alertCount}</span>
             </div>
+            
+            <a href="account.html" class="header-account-btn">
+              <div class="header-account-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <span class="header-account-name">管理者ユーザー</span>
+            </a>
           </div>
         </div>
 
+        ${!hideTitle ? `
         <!-- ヘッダー下：ページタイトルエリア -->
         <div class="page-title-area">
           <div class="page-title">
@@ -293,6 +337,7 @@ class AppHeader extends HTMLElement {
           </div>
           ${breadcrumbsHTML ? `<div class="breadcrumbs-container">${breadcrumbsHTML}</div>` : ''}
         </div>
+        ` : ''}
       </div>
     `;
 
