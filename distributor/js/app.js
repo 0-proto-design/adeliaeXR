@@ -1189,6 +1189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeHandler = () => {
           progressModal.style.display = 'none';
           progressCloseBtn.removeEventListener('click', closeHandler);
+          window.location.href = `manage.html?id=${buildingId}`;
         };
         progressCloseBtn.addEventListener('click', closeHandler);
       });
@@ -1551,8 +1552,53 @@ document.addEventListener('DOMContentLoaded', () => {
     if (saveAutoplayBtn) {
       saveAutoplayBtn.addEventListener('click', () => {
         localStorage.setItem(storageKey, JSON.stringify(config));
-        alert('待機中動画の設定を保存しました。');
-        window.location.href = `manage.html?id=${buildingId}`;
+        
+        const progressModal = document.getElementById('saveProgressModal');
+        const progressIcon = document.getElementById('saveProgressIcon');
+        const progressStatus = document.getElementById('saveProgressStatus');
+        const progressDesc = document.getElementById('saveProgressDesc');
+        const progressCloseBtn = document.getElementById('saveProgressCloseBtn');
+
+        if (!progressModal) {
+          alert('待機中動画の設定を保存しました。');
+          window.location.href = `manage.html?id=${buildingId}`;
+          return;
+        }
+
+        // モーダルの初期状態をセット
+        progressIcon.innerHTML = '<div class="save-spinner"></div>';
+        progressStatus.textContent = '設定を保存中...';
+        progressStatus.style.color = 'var(--color-cyan)';
+        progressDesc.innerHTML = '<span style="white-space: nowrap;">しばらくお待ちください。</span>';
+        progressDesc.style.display = 'block';
+        progressCloseBtn.style.display = 'none';
+        progressModal.style.display = 'flex';
+
+        let counter = 3;
+        const timer = setInterval(() => {
+          counter--;
+          if (counter <= 0) {
+            clearInterval(timer);
+            // 保存完了状態
+            progressIcon.innerHTML = `
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-cyan)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            `;
+            progressStatus.textContent = '保存完了';
+            progressStatus.style.color = 'var(--color-cyan)';
+            progressDesc.style.display = 'none';
+            progressCloseBtn.style.display = 'block';
+          }
+        }, 1000);
+
+        // 閉じるボタンのイベント
+        const closeHandler = () => {
+          progressModal.style.display = 'none';
+          progressCloseBtn.removeEventListener('click', closeHandler);
+          window.location.href = `manage.html?id=${buildingId}`;
+        };
+        progressCloseBtn.addEventListener('click', closeHandler);
       });
     }
   }
