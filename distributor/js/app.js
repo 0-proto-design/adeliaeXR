@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- 全体動画管理画面用 (カテゴリ・動画 登録・管理・編集 制御) ---
+  // --- 全体コンテンツ管理画面用 (カテゴリ・コンテンツ 登録・管理・編集 制御) ---
   const addCategoryBtn = document.getElementById('addCategoryBtn');
   const newRegisterBtn = document.getElementById('newRegisterBtn');
   const categoryPopup = document.querySelector('category-popup');
@@ -116,6 +116,15 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'm7', title: '太陽系の神秘', desc: '太陽を中心に、水星から海王星までの各惑星をクローズアップ。', type: 'mp4' },
         { id: 'm8', title: 'ブラックホール深淵', desc: '光すら逃げ出せない宇宙の重力深淵ブラックホールのシミュレーション。', type: 'mp4' }
       ]
+    },
+    {
+      id: 'cat_city',
+      name: '都市 / 景観',
+      movies: [
+        { id: 'm9', title: '摩天楼の夜景', desc: '大都市のきらめく夜景と光が流れるタイムラプス映像。', type: 'mp4' },
+        { id: 'm10', title: '古都の佇まい', desc: '歴史ある伝統的な街並みと情緒あふれる木造建築。', type: 'mp4' },
+        { id: 'm11', title: '未来都市の鼓動', desc: '先進的なテクノロジーとサイバーパンク風の近未来都市CG。', type: 'mp4' }
+      ]
     }
   ];
 
@@ -124,10 +133,27 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!categories) {
     categories = defaultCategories;
     localStorage.setItem('adeliae_categories', JSON.stringify(categories));
+  } else {
+    // 既存データのマイグレーション（「テスト」「サンプル」「吉野」カテゴリが存在する場合は「都市 / 景観」に変更し、コンテンツを適切なものに更新）
+    let hasMigration = false;
+    categories.forEach(cat => {
+      if (cat.name === 'テスト' || cat.name === 'サンプル' || cat.name === '吉野') {
+        cat.name = '都市 / 景観';
+        cat.movies = [
+          { id: 'm9', title: '摩天楼の夜景', desc: '大都市のきらめく夜景と光が流れるタイムラプス映像。', type: 'mp4' },
+          { id: 'm10', title: '古都の佇まい', desc: '歴史ある伝統的な街並みと情緒あふれる木造建築。', type: 'mp4' },
+          { id: 'm11', title: '未来都市の鼓動', desc: '先進的なテクノロジーとサイバーパンク風の近未来都市CG。', type: 'mp4' }
+        ];
+        hasMigration = true;
+      }
+    });
+    if (hasMigration) {
+      localStorage.setItem('adeliae_categories', JSON.stringify(categories));
+    }
   }
 
   // ==========================================
-  // 【A】全体動画管理画面 (movies.html) の描画ロジック
+  // 【A】全体コンテンツ管理画面 (movies.html) の描画ロジック
   // ==========================================
   if (addCategoryBtn && categoryPopup && mainContent && !buildingSelect && !syncBuildingSelect && !autoplayBuildingSelect) {
     let activeCategoryFilter = 'all';
@@ -135,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderCategories = () => {
       const existingSections = mainContent.querySelectorAll('.movie-category-section');
       existingSections.forEach(sec => sec.remove());
-      const existingTabs = mainContent.querySelector('.content-tabs');
+      const existingTabs = mainContent.querySelector('.category-filter-container');
       if (existingTabs) existingTabs.remove();
       const existingEmpty = mainContent.querySelector('.empty-state');
       if (existingEmpty) existingEmpty.remove();
@@ -153,34 +179,42 @@ document.addEventListener('DOMContentLoaded', () => {
         activeCategoryFilter = 'all';
       }
 
-      const tabsContainer = document.createElement('div');
-      tabsContainer.className = 'content-tabs';
+      const filterContainer = document.createElement('div');
+      filterContainer.className = 'category-filter-container';
 
-      const allTab = document.createElement('button');
-      allTab.className = `content-tab-btn ${activeCategoryFilter === 'all' ? 'active' : ''}`;
-      allTab.textContent = 'すべて';
-      allTab.addEventListener('click', () => {
-        activeCategoryFilter = 'all';
-        renderCategories();
-      });
-      tabsContainer.appendChild(allTab);
+      const filterLabel = document.createElement('span');
+      filterLabel.className = 'category-filter-label';
+      filterLabel.textContent = 'カテゴリ';
+
+      const filterSelect = document.createElement('select');
+      filterSelect.className = 'category-filter-select';
+      
+      const allOption = document.createElement('option');
+      allOption.value = 'all';
+      allOption.textContent = 'すべて';
+      filterSelect.appendChild(allOption);
 
       categories.forEach(cat => {
-        const tab = document.createElement('button');
-        tab.className = `content-tab-btn ${activeCategoryFilter === cat.id ? 'active' : ''}`;
-        tab.textContent = cat.name;
-        tab.addEventListener('click', () => {
-          activeCategoryFilter = cat.id;
-          renderCategories();
-        });
-        tabsContainer.appendChild(tab);
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        filterSelect.appendChild(option);
       });
+
+      filterSelect.value = activeCategoryFilter;
+      filterSelect.addEventListener('change', (e) => {
+        activeCategoryFilter = e.target.value;
+        renderCategories();
+      });
+
+      filterContainer.appendChild(filterLabel);
+      filterContainer.appendChild(filterSelect);
 
       const actionBar = mainContent.querySelector('.action-bar');
       if (actionBar) {
-        actionBar.after(tabsContainer);
+        actionBar.after(filterContainer);
       } else {
-        mainContent.insertBefore(tabsContainer, mainContent.firstChild);
+        mainContent.insertBefore(filterContainer, mainContent.firstChild);
       }
 
       const categoriesToRender = activeCategoryFilter === 'all'
@@ -193,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         section.id = cat.id;
 
         const moviesHTML = (cat.movies || []).map(movie => `
-          <div class="movie-card" data-id="${movie.id}" style="cursor: pointer;">
+          <div class="movie-card hover-zoom-card" data-id="${movie.id}" style="cursor: pointer;">
             <div class="movie-thumbnail">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(143, 160, 192, 0.4);">
                 <polygon points="23 7 16 12 23 17 23 7"/>
@@ -209,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         section.innerHTML = `
           <h2 class="category-title">${cat.name}</h2>
           <div class="movies-grid">
-            ${moviesHTML || '<div class="empty-list" style="grid-column: span 4; text-align: center; color: var(--text-color-secondary); padding: 20px; font-size: 15px;">このカテゴリに動画は登録されていません。</div>'}
+            ${moviesHTML || '<div class="empty-list" style="grid-column: span 4; text-align: center; color: var(--text-color-secondary); padding: 20px; font-size: 15px;">このカテゴリにコンテンツは登録されていません。</div>'}
           </div>
         `;
         mainContent.appendChild(section);
@@ -264,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('adeliae_categories', JSON.stringify(categories));
           renderCategories();
 
-          // 上映中動画として反映 (同期シミュレーション)
+          // 上映中コンテンツとして反映 (同期シミュレーション)
           if (syncBuildingIds && syncBuildingIds.length > 0) {
             syncBuildingIds.forEach(buildingId => {
               const card = document.getElementById(buildingId);
@@ -325,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('adeliae_categories', JSON.stringify(categories));
         renderCategories();
 
-        // 上映動画に反映 (同期シミュレーション)
+        // 配信コンテンツに反映 (同期シミュレーション)
         if (syncBuildingIds) {
           const buildingIds = ['1', '2', '3', '4'];
           buildingIds.forEach(buildingId => {
@@ -498,7 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderManageCategories = () => {
       const existingSections = mainContent.querySelectorAll('.movie-category-section');
       existingSections.forEach(sec => sec.remove());
-      const existingTabs = mainContent.querySelector('.content-tabs');
+      const existingTabs = mainContent.querySelector('.category-filter-container');
       if (existingTabs) existingTabs.remove();
       const existingEmpty = mainContent.querySelector('.empty-state');
       if (existingEmpty) existingEmpty.remove();
@@ -507,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const noCategoryMessage = document.createElement('div');
         noCategoryMessage.className = 'movie-category-section empty-state';
         noCategoryMessage.style.cssText = 'text-align: center; padding: 40px; color: var(--text-color-secondary); font-size: 15px;';
-        noCategoryMessage.innerHTML = '登録されている動画カテゴリがありません。';
+        noCategoryMessage.innerHTML = '登録されているコンテンツカテゴリがありません。';
         mainContent.appendChild(noCategoryMessage);
         return;
       }
@@ -516,34 +550,42 @@ document.addEventListener('DOMContentLoaded', () => {
         activeManageCategoryFilter = 'all';
       }
 
-      const tabsContainer = document.createElement('div');
-      tabsContainer.className = 'content-tabs';
+      const filterContainer = document.createElement('div');
+      filterContainer.className = 'category-filter-container';
 
-      const allTab = document.createElement('button');
-      allTab.className = `content-tab-btn ${activeManageCategoryFilter === 'all' ? 'active' : ''}`;
-      allTab.textContent = 'すべて';
-      allTab.addEventListener('click', () => {
-        activeManageCategoryFilter = 'all';
-        renderManageCategories();
-      });
-      tabsContainer.appendChild(allTab);
+      const filterLabel = document.createElement('span');
+      filterLabel.className = 'category-filter-label';
+      filterLabel.textContent = 'カテゴリ';
+
+      const filterSelect = document.createElement('select');
+      filterSelect.className = 'category-filter-select';
+      
+      const allOption = document.createElement('option');
+      allOption.value = 'all';
+      allOption.textContent = 'すべて';
+      filterSelect.appendChild(allOption);
 
       categories.forEach(cat => {
-        const tab = document.createElement('button');
-        tab.className = `content-tab-btn ${activeManageCategoryFilter === cat.id ? 'active' : ''}`;
-        tab.textContent = cat.name;
-        tab.addEventListener('click', () => {
-          activeManageCategoryFilter = cat.id;
-          renderManageCategories();
-        });
-        tabsContainer.appendChild(tab);
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        filterSelect.appendChild(option);
       });
+
+      filterSelect.value = activeManageCategoryFilter;
+      filterSelect.addEventListener('change', (e) => {
+        activeManageCategoryFilter = e.target.value;
+        renderManageCategories();
+      });
+
+      filterContainer.appendChild(filterLabel);
+      filterContainer.appendChild(filterSelect);
 
       const configBar = mainContent.querySelector('.config-bar');
       if (configBar) {
-        configBar.after(tabsContainer);
+        configBar.after(filterContainer);
       } else {
-        mainContent.insertBefore(tabsContainer, mainContent.firstChild);
+        mainContent.insertBefore(filterContainer, mainContent.firstChild);
       }
 
       const categoriesToRender = activeManageCategoryFilter === 'all'
@@ -556,7 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
         section.id = cat.id;
 
         const moviesHTML = (cat.movies || []).map(movie => `
-          <div class="movie-card" data-id="${movie.id}" style="cursor: pointer;">
+          <div class="movie-card" data-id="${movie.id}">
             <div class="movie-thumbnail">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(143, 160, 192, 0.4);">
                 <polygon points="23 7 16 12 23 17 23 7"/>
@@ -572,31 +614,10 @@ document.addEventListener('DOMContentLoaded', () => {
         section.innerHTML = `
           <h2 class="category-title">${cat.name}</h2>
           <div class="movies-grid">
-            ${moviesHTML || '<div class="empty-list" style="grid-column: span 4; text-align: center; color: var(--text-color-secondary); padding: 20px; font-size: 15px;">このカテゴリに動画は登録されていません。</div>'}
+            ${moviesHTML || '<div class="empty-list" style="grid-column: span 4; text-align: center; color: var(--text-color-secondary); padding: 20px; font-size: 15px;">このカテゴリにコンテンツは登録されていません。</div>'}
           </div>
         `;
         mainContent.appendChild(section);
-      });
-
-      const manageCards = mainContent.querySelectorAll('.movie-card');
-      manageCards.forEach(card => {
-        card.addEventListener('click', () => {
-          const movieId = card.getAttribute('data-id');
-          let selectedMovie = null;
-          categories.forEach(cat => {
-            const m = (cat.movies || []).find(x => x.id === movieId);
-            if (m) selectedMovie = m;
-          });
-
-          if (selectedMovie) {
-            manageCards.forEach(c => {
-              c.style.borderColor = '';
-              c.style.boxShadow = '';
-            });
-            card.style.borderColor = 'var(--color-cyan)';
-            card.style.boxShadow = '0 0 12px var(--color-cyan-glow)';
-          }
-        });
       });
     };
 
@@ -814,19 +835,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ヘッダータイトルの同期
     if (appHeader) {
-      appHeader.setAttribute('page-title', `${name} - 上映動画`);
+      appHeader.setAttribute('page-title', `${name} - 配信コンテンツ`);
       appHeader.setAttribute('breadcrumbs', JSON.stringify([
         { name: '設置現場 監視', url: 'index.html' },
         { name: `${name} - 詳細 / 設定`, url: `manage.html?id=${buildingId}` },
-        { name: '上映動画' }
+        { name: '配信コンテンツ' }
       ]));
     }
 
     if (devicePanelTitle) {
-      devicePanelTitle.textContent = `${name} 上映動画`;
+      devicePanelTitle.textContent = `${name} 配信コンテンツ`;
     }
 
-    // 選択された棟の同期対象動画IDリストをロード (なければデフォルト設定)
+    // 選択された棟の同期対象コンテンツIDリストをロード (なければデフォルト設定)
     const storageKey = `adeliae_sync_ids_building_${buildingId}`;
     let syncMovieIds = JSON.parse(localStorage.getItem(storageKey));
     if (!syncMovieIds) {
@@ -841,30 +862,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // カテゴリフィルタータブの動的生成
     if (syncCategoryTabs) {
       syncCategoryTabs.innerHTML = '';
+      syncCategoryTabs.className = 'category-filter-container';
+      syncCategoryTabs.style.cssText = 'display: flex; align-items: center; gap: 12px; margin-bottom: 16px;';
       
-      const allTab = document.createElement('button');
-      allTab.className = 'content-tab-btn active';
-      allTab.dataset.category = 'all';
-      allTab.textContent = 'すべて';
-      syncCategoryTabs.appendChild(allTab);
+      const filterLabel = document.createElement('span');
+      filterLabel.className = 'category-filter-label';
+      filterLabel.textContent = 'カテゴリ';
+
+      const filterSelect = document.createElement('select');
+      filterSelect.className = 'category-filter-select';
+      
+      const allOption = document.createElement('option');
+      allOption.value = 'all';
+      allOption.textContent = 'すべて';
+      filterSelect.appendChild(allOption);
 
       categories.forEach(cat => {
-        const tab = document.createElement('button');
-        tab.className = 'content-tab-btn';
-        tab.dataset.category = cat.id;
-        tab.textContent = cat.name;
-        syncCategoryTabs.appendChild(tab);
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        filterSelect.appendChild(option);
       });
 
-      syncCategoryTabs.addEventListener('click', (e) => {
-        const clickedTab = e.target.closest('.content-tab-btn');
-        if (clickedTab) {
-          syncCategoryTabs.querySelectorAll('.content-tab-btn').forEach(btn => btn.classList.remove('active'));
-          clickedTab.classList.add('active');
-          currentSelectedCategory = clickedTab.dataset.category;
-          renderSyncPanels();
-        }
+      filterSelect.addEventListener('change', (e) => {
+        currentSelectedCategory = e.target.value;
+        renderSyncPanels();
       });
+
+      syncCategoryTabs.appendChild(filterLabel);
+      syncCategoryTabs.appendChild(filterSelect);
     }
 
     // キャンセルボタンの挙動設定
@@ -877,7 +903,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 他の設置現場と同期するオプション動的生成およびチェンジイベント
     if (syncSourceSelect) {
-      syncSourceSelect.innerHTML = '<option value="none">-- 自分で動画を選択する --</option>';
+      syncSourceSelect.innerHTML = '<option value="none">-- 自分でコンテンツを選択する --</option>';
       const allBuildingIds = ['1', '2', '3', '4'];
       allBuildingIds.forEach(id => {
         if (id === buildingId) return;
@@ -913,7 +939,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // 「すべての動画を選択」チェックボックスの挙動設定
+    // 「すべてのコンテンツを選択」チェックボックスの挙動設定
     const selectAllMoviesCheckbox = document.getElementById('selectAllMovies');
     if (selectAllMoviesCheckbox) {
       selectAllMoviesCheckbox.addEventListener('change', (e) => {
@@ -937,7 +963,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // 左右パネル of 動画レンダリング関数 (カテゴリ分け)
+    // 左右パネル of コンテンツレンダリング関数 (カテゴリ分け)
     const renderSyncPanels = () => {
       pcMoviesContainer.innerHTML = '';
       deviceMoviesContainer.innerHTML = '';
@@ -1099,7 +1125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           pcGrid.appendChild(pcCard);
 
-          // 2. 右パネル（号棟側）の動画カード生成
+          // 2. 右パネル（号棟側）のコンテンツカード生成
           if (isSynced) {
             deviceCount++;
             devSectionHasMovies = true;
@@ -1131,10 +1157,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // 空白状態の補足
       if (pcCount === 0) {
-        pcMoviesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 40px;">表示する動画がありません。</div>';
+        pcMoviesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 40px;">表示するコンテンツがありません。</div>';
       }
       if (deviceCount === 0) {
-        deviceMoviesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 40px;">反映対象の動画が選択されていません。</div>';
+        deviceMoviesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 40px;">反映対象のコンテンツが選択されていません。</div>';
       }
     };
 
@@ -1154,7 +1180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // モーダルの初期状態をセット
         progressIcon.innerHTML = '<div class="sync-spinner"></div>';
-        progressStatus.textContent = '動画を反映中...';
+        progressStatus.textContent = 'コンテンツを反映中...';
         progressStatus.style.color = 'var(--color-status-green)';
         progressDesc.innerHTML = '<span style="white-space: nowrap;">しばらくお待ちください。</span>';
         progressDesc.style.display = 'block';
@@ -1216,16 +1242,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ヘッダータイトルの同期
     if (appHeader) {
-      appHeader.setAttribute('page-title', `${name} - 待機中動画`);
+      appHeader.setAttribute('page-title', `${name} - 待機時表示コンテンツ`);
       appHeader.setAttribute('breadcrumbs', JSON.stringify([
         { name: '設置現場 監視', url: 'index.html' },
         { name: `${name} - 詳細 / 設定`, url: `manage.html?id=${buildingId}` },
-        { name: '待機中動画' }
+        { name: '待機時表示コンテンツ' }
       ]));
     }
 
     if (slotsPanelTitle) {
-      slotsPanelTitle.textContent = `自動再生する動画 （1～5件）`;
+      slotsPanelTitle.textContent = `自動再生するコンテンツ （1～5件）`;
     }
 
     // 「キャンセル（号棟管理へ戻る）」ボタンの挙動設定
@@ -1374,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let foundMovie = null;
         
         if (videoId) {
-          // 全カテゴリから動画を検索
+          // 全カテゴリからコンテンツを検索
           categories.forEach(cat => {
             const m = (cat.movies || []).find(x => x.id === videoId);
             if (m) foundMovie = m;
@@ -1437,15 +1463,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    // 動画選択モーダルの起動
+    // コンテンツ選択モーダルの起動
     let activeSlotIndex = null;
     const openSelectModal = (index) => {
       activeSlotIndex = index;
 
       // ヘッダータイトルを更新
-      if (modalTitle) modalTitle.textContent = `動画を選択　（スロット ${index + 1} に追加）`;
+      if (modalTitle) modalTitle.textContent = `コンテンツを選択　（スロット ${index + 1} に追加）`;
 
-      // すでに登録されている動画IDをリストアップして重複選択を防ぐ
+      // すでに登録されているコンテンツIDをリストアップして重複選択を防ぐ
       const usedIds = config.videoIds.filter(id => id !== null);
 
       // ---- カテゴリタブの生成 ----
@@ -1464,69 +1490,92 @@ document.addEventListener('DOMContentLoaded', () => {
           ? categories
           : categories.filter(c => c.id === filterCatId);
 
+        let totalMoviesCount = 0;
+
         targetCategories.forEach(cat => {
-          (cat.movies || []).forEach(movie => {
+          if (!cat.movies || cat.movies.length === 0) return;
+
+          const section = document.createElement('section');
+          section.className = 'movie-category-section';
+          section.style.marginBottom = '0'; // モーダル内の微調整
+
+          const moviesHTML = cat.movies.map(movie => {
+            totalMoviesCount++;
             const isUsed = usedIds.includes(movie.id);
-
-            const card = document.createElement('div');
-            card.className = `vmodal-movie-card ${isUsed ? 'used' : ''}`;
-            card.innerHTML = `
-              ${isUsed ? '<div class="vcard-used-badge">使用中</div>' : ''}
-              <div class="movie-thumbnail">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="23 7 16 12 23 17 23 7"/>
-                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                </svg>
+            return `
+              <div class="movie-card hover-zoom-card vmodal-movie-card ${isUsed ? 'used' : ''}" data-id="${movie.id}" style="cursor: ${isUsed ? 'not-allowed' : 'pointer'};">
+                ${isUsed ? '<div class="vcard-used-badge">使用中</div>' : ''}
+                <div class="movie-thumbnail">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(143, 160, 192, 0.4);">
+                    <polygon points="23 7 16 12 23 17 23 7"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                  </svg>
+                </div>
+                <div class="movie-info">
+                  <span class="movie-title">${movie.title}</span>
+                </div>
               </div>
-              <div class="vcard-title">${movie.title}</div>
             `;
+          }).join('');
 
-            if (!isUsed) {
-              card.addEventListener('click', () => {
-                config.videoIds[activeSlotIndex] = movie.id;
-                closeSelectModal();
-                renderSlots();
-              });
-            }
+          section.innerHTML = `
+            <h3 class="category-title" style="margin-bottom: 12px; color: var(--text-color-cyan); font-size: 15px; font-weight: bold; border-left: 3px solid var(--color-cyan); padding-left: 8px;">${cat.name}</h3>
+            <div class="movies-grid">
+              ${moviesHTML}
+            </div>
+          `;
+          
+          modalVideoGrid.appendChild(section);
+        });
 
-            modalVideoGrid.appendChild(card);
+        // Add event listeners to newly created cards
+        const cards = modalVideoGrid.querySelectorAll('.movie-card:not(.used)');
+        cards.forEach(card => {
+          card.addEventListener('click', () => {
+            const movieId = card.getAttribute('data-id');
+            config.videoIds[activeSlotIndex] = movieId;
+            closeSelectModal();
+            renderSlots();
           });
         });
 
         // 空の場合
-        if (modalVideoGrid.children.length === 0) {
-          modalVideoGrid.innerHTML = '<div style="grid-column: span 4; text-align: center; color: var(--text-color-secondary); padding: 40px;">このカテゴリに動画がありません。</div>';
+        if (totalMoviesCount === 0) {
+          modalVideoGrid.innerHTML = '<div style="grid-column: span 4; text-align: center; color: var(--text-color-secondary); padding: 40px;">このカテゴリにコンテンツがありません。</div>';
         }
       };
 
       // タブを構築
       modalCategoryTabs.innerHTML = '';
+      modalCategoryTabs.className = 'category-filter-container';
+      modalCategoryTabs.style.cssText = 'display: flex; align-items: center; gap: 12px; margin: 16px 24px;';
+      
+      const filterLabel = document.createElement('span');
+      filterLabel.className = 'category-filter-label';
+      filterLabel.textContent = 'カテゴリ';
 
-      // 「すべて」タブ
-      const allTab = document.createElement('button');
-      allTab.className = 'content-tab-btn active';
-      allTab.textContent = 'すべて';
-      allTab.addEventListener('click', () => {
-        activeTabId = 'all';
-        modalCategoryTabs.querySelectorAll('.content-tab-btn').forEach(b => b.classList.remove('active'));
-        allTab.classList.add('active');
-        renderModalGrid('all');
-      });
-      modalCategoryTabs.appendChild(allTab);
+      const filterSelect = document.createElement('select');
+      filterSelect.className = 'category-filter-select';
+      
+      const allOption = document.createElement('option');
+      allOption.value = 'all';
+      allOption.textContent = 'すべて';
+      filterSelect.appendChild(allOption);
 
-      // カテゴリタブ
       categories.forEach(cat => {
-        const tab = document.createElement('button');
-        tab.className = 'content-tab-btn';
-        tab.textContent = cat.name;
-        tab.addEventListener('click', () => {
-          activeTabId = cat.id;
-          modalCategoryTabs.querySelectorAll('.content-tab-btn').forEach(b => b.classList.remove('active'));
-          tab.classList.add('active');
-          renderModalGrid(cat.id);
-        });
-        modalCategoryTabs.appendChild(tab);
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        filterSelect.appendChild(option);
       });
+
+      filterSelect.addEventListener('change', (e) => {
+        activeTabId = e.target.value;
+        renderModalGrid(activeTabId);
+      });
+
+      modalCategoryTabs.appendChild(filterLabel);
+      modalCategoryTabs.appendChild(filterSelect);
 
       // 初期グリッドを「全て」で描画
       renderModalGrid('all');
@@ -1560,7 +1609,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const progressCloseBtn = document.getElementById('saveProgressCloseBtn');
 
         if (!progressModal) {
-          alert('待機中動画の設定を保存しました。');
+          alert('待機時表示コンテンツの設定を保存しました。');
           window.location.href = `manage.html?id=${buildingId}`;
           return;
         }

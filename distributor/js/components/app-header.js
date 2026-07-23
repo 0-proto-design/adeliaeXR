@@ -85,32 +85,31 @@ class AppHeader extends HTMLElement {
 
         .tab-btn {
           background: transparent;
-          border: 1.5px solid var(--color-cyan);
-          color: var(--color-cyan);
-          padding: 10px 32px;
-          font-size: 15px;
+          border: none;
+          border-bottom: 3px solid rgba(0, 210, 255, 0.2);
+          color: var(--text-color-secondary);
+          padding: 10px 24px;
+          font-size: 16px;
           font-weight: bold;
-          border-radius: var(--border-radius-medium);
           cursor: pointer;
           transition: all 0.2s ease-in-out;
           text-decoration: none;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 2px 6px rgba(0, 210, 255, 0.05);
         }
 
         .tab-btn:hover {
-          background-color: rgba(0, 210, 255, 0.08);
-          box-shadow: 0 0 8px var(--color-cyan-glow);
           color: var(--color-cyan);
+          border-bottom: 3px solid rgba(0, 210, 255, 0.5);
+          background-color: transparent;
         }
 
         .tab-btn.active {
-          border: 1.5px solid var(--color-cyan);
-          background-color: var(--color-cyan);
-          color: var(--bg-color-main);
-          box-shadow: 0 0 10px var(--color-cyan-glow);
+          border: none;
+          border-bottom: 3px solid var(--color-cyan);
+          background-color: transparent;
+          color: var(--color-cyan);
         }
 
         /* 右端：アクションエリア（アラート、アカウント） */
@@ -150,37 +149,44 @@ class AppHeader extends HTMLElement {
           line-height: 1;
         }
 
-        /* アカウント情報ボタン */
+        /* アカウント情報ボタン (立体的なボタンデザイン) */
         .header-account-btn {
           display: flex;
           align-items: center;
-          gap: 8px;
-          color: var(--text-color-primary);
+          gap: 6px;
           text-decoration: none;
-          padding: 6px 12px;
-          border-radius: var(--border-radius-medium);
-          transition: background-color 0.2s;
+          background-color: var(--bg-color-main);
+          border: 1.5px solid var(--color-cyan);
+          color: var(--color-cyan);
+          padding: 6px 16px 6px 10px;
+          font-size: 13px;
+          font-weight: bold;
+          border-radius: var(--border-radius-small);
+          cursor: pointer;
+          transition: all 0.1s ease;
+          box-shadow: 0 3px 0 #0088b3, 0 4px 8px rgba(0, 0, 0, 0.4);
+          transform: translateY(0);
         }
 
         .header-account-btn:hover {
-          background-color: rgba(255, 255, 255, 0.1);
+          background-color: #1a2333;
+          box-shadow: 0 3px 0 #0088b3, 0 6px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-account-btn:active {
+          transform: translateY(3px);
+          box-shadow: 0 0px 0 #0088b3, 0 2px 4px rgba(0, 0, 0, 0.4);
         }
 
         .header-account-icon {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          background-color: rgba(0, 210, 255, 0.15);
-          color: var(--text-color-cyan);
-          border: 1px solid var(--color-cyan);
+          color: var(--color-cyan);
         }
 
         .header-account-name {
-          font-size: 14px;
-          font-weight: 500;
+          color: inherit;
         }
 
         /* ヘッダー下：ページタイトルエリア */
@@ -243,31 +249,38 @@ class AppHeader extends HTMLElement {
         }
 
         .header-title-select {
-          background-color: rgba(0, 210, 255, 0.05);
-          border: 1px solid var(--color-cyan);
-          color: var(--text-color-cyan);
+          background-color: var(--bg-color-main);
+          border: 1.5px solid var(--color-cyan);
+          color: var(--color-cyan);
+          padding: 10px 40px 10px 16px;
           font-size: 15px;
           font-weight: bold;
           font-family: inherit;
+          border-radius: var(--border-radius-medium);
           cursor: pointer;
+          transition: all 0.1s ease;
+          box-shadow: 0 4px 0 #0088b3, 0 6px 12px rgba(0, 0, 0, 0.4);
+          transform: translateY(0);
           outline: none;
-          padding: 6px 28px 6px 12px;
-          border-radius: var(--border-radius-small);
+          min-width: 160px;
           -webkit-appearance: none;
           -moz-appearance: none;
           appearance: none;
-          background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2300D2FF%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22/></svg>');
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300d2ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
           background-repeat: no-repeat;
-          background-position: right 10px center;
-          background-size: 10px;
+          background-position: right 14px center;
+          background-size: 16px;
           margin: 0;
-          transition: all 0.2s;
-          box-shadow: 0 0 4px var(--color-cyan-glow);
         }
 
         .header-title-select:hover {
-          background-color: rgba(0, 210, 255, 0.12);
-          box-shadow: 0 0 8px var(--color-cyan-glow);
+          background-color: #1a2333;
+          box-shadow: 0 4px 0 #0088b3, 0 8px 16px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-title-select:active {
+          transform: translateY(4px);
+          box-shadow: 0 0px 0 #0088b3, 0 2px 4px rgba(0, 0, 0, 0.4);
         }
       </style>
 
@@ -289,10 +302,12 @@ class AppHeader extends HTMLElement {
             </a>
             <a href="movies.html" class="tab-btn ${activeTab === 'contents' ? 'active' : ''}">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: block;">
-                <circle cx="12" cy="12" r="10"/>
-                <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
               </svg>
-              動画マスター管理
+              全体コンテンツ管理
             </a>
           </div>
           
@@ -325,7 +340,7 @@ class AppHeader extends HTMLElement {
           <div class="page-title">
             <span class="page-title-line"></span>
             ${buildingId ? `
-              <select class="header-title-select" id="headerTitleSelect" style="margin-right: 8px;">
+              <select class="header-title-select category-filter-select" id="headerTitleSelect" style="margin-right: 8px;">
                 <option value="1" ${buildingId === '1' ? 'selected' : ''} style="background: var(--bg-color-main); color: var(--text-color-primary);">1号棟</option>
                 <option value="2" ${buildingId === '2' ? 'selected' : ''} style="background: var(--bg-color-main); color: var(--text-color-primary);">2号棟</option>
                 <option value="3" ${buildingId === '3' ? 'selected' : ''} style="background: var(--bg-color-main); color: var(--text-color-primary);">3号棟</option>

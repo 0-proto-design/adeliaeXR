@@ -13,10 +13,10 @@ class RegisterPopup extends HTMLElement {
     this.categories = categories;
     this.render(); // カテゴリリストを動的にプルダウンへ反映するため再レンダリング
     this.setupDragAndDrop(); // レンダリング後にサムネイルのD&Dイベントを設定
-    this.setupVideoUpload(); // レンダリング後に動画のD&Dイベントを設定
+    this.setupVideoUpload(); // レンダリング後にコンテンツのD&Dイベントを設定
     this.setupSuggestions(); // レンダリング後に候補画像の選択イベントを設定
     this.updateBuildingNames(); // 現場名の表示を動的更新する
-    this.resetVideoUI(); // 最初は動画ファイル未設定状態にする
+    this.resetVideoUI(); // 最初はコンテンツファイル未設定状態にする
     this.style.display = 'block';
     document.body.style.overflow = 'hidden';
   }
@@ -115,7 +115,7 @@ class RegisterPopup extends HTMLElement {
 
   handleVideoFile(file) {
     if (!file.type.startsWith('video/')) {
-      alert('動画ファイルを選択してください。');
+      alert('コンテンツファイルを選択してください。');
       return;
     }
     this.updateVideoUI(file.name);
@@ -195,7 +195,7 @@ class RegisterPopup extends HTMLElement {
         existingNote.remove();
       }
 
-      // 他の現場と上映動画を同じにしているかをチェック
+      // 他の現場と配信コンテンツを同じにしているかをチェック
       const syncSourceKey = `adeliae_sync_source_building_${id}`;
       const syncSourceVal = localStorage.getItem(syncSourceKey) || 'none';
 
@@ -209,7 +209,7 @@ class RegisterPopup extends HTMLElement {
         const targetName = localStorage.getItem(`adeliae_building_name_${syncSourceVal}`) || `${syncSourceVal}号棟`;
         const noteSpan = document.createElement('span');
         noteSpan.className = 'sync-site-note';
-        noteSpan.textContent = ` （${targetName}の上映動画と同じにしています）`;
+        noteSpan.textContent = ` （${targetName}の配信コンテンツと同じにしています）`;
         noteSpan.style.color = 'var(--text-color-secondary)';
         noteSpan.style.fontSize = '12px';
         noteSpan.style.marginLeft = '8px';
@@ -361,7 +361,7 @@ class RegisterPopup extends HTMLElement {
     const checkedSites = Array.from(this.querySelectorAll('input[name="syncSites"]:checked')).map(cb => cb.value);
 
     if (!videoFile) {
-      alert('動画ファイルを選択してください。');
+      alert('コンテンツファイルを選択してください。');
       return;
     }
     if (!title) {
@@ -634,22 +634,30 @@ class RegisterPopup extends HTMLElement {
         }
 
         .inline-file-select-btn {
-          background-color: transparent;
-          border: 1px solid var(--color-cyan);
+          background-color: var(--bg-color-main);
+          border: 1.5px solid var(--color-cyan);
           color: var(--color-cyan);
           padding: 6px 12px;
           border-radius: var(--border-radius-small);
           font-size: 13px;
           font-weight: bold;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.1s ease;
+          box-shadow: 0 3px 0 #0088b3, 0 4px 8px rgba(0, 0, 0, 0.4);
+          transform: translateY(0);
           display: inline-flex;
           align-items: center;
           gap: 6px;
         }
 
         .inline-file-select-btn:hover {
-          background-color: rgba(0, 210, 255, 0.1);
+          background-color: #1a2333;
+          box-shadow: 0 3px 0 #0088b3, 0 6px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .inline-file-select-btn:active {
+          transform: translateY(3px);
+          box-shadow: 0 0px 0 #0088b3, 0 2px 4px rgba(0, 0, 0, 0.4);
         }
 
         .thumbnail-preview-container {
@@ -692,33 +700,6 @@ class RegisterPopup extends HTMLElement {
           box-shadow: 0 0 4px var(--color-cyan-glow);
         }
 
-        .btn-change-image {
-          position: absolute;
-          top: 12px;
-          right: 12px;
-          background-color: #0d1b2a;
-          border: 1.5px solid rgba(0, 210, 255, 0.5);
-          color: var(--text-color-cyan);
-          padding: 6px 12px;
-          font-size: 12px;
-          font-weight: bold;
-          border-radius: var(--border-radius-small);
-          cursor: pointer;
-          transition: all 0.2s;
-          z-index: 2;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .btn-change-image:hover {
-          background-color: var(--color-cyan);
-          color: var(--bg-color-main);
-          border-color: var(--color-cyan);
-          box-shadow: 0 0 12px var(--color-cyan-glow);
-        }
-
         /* 右カラム: フォーム入力 */
         .form-column {
           display: flex;
@@ -755,7 +736,7 @@ class RegisterPopup extends HTMLElement {
           letter-spacing: 0.05em;
         }
 
-        .form-input, .form-textarea, .form-select {
+        .form-input, .form-textarea {
           background-color: var(--bg-color-main);
           border: 1px solid rgba(0, 210, 255, 0.25);
           border-radius: var(--border-radius-medium);
@@ -771,6 +752,7 @@ class RegisterPopup extends HTMLElement {
         .form-input:focus, .form-textarea:focus, .form-select:focus {
           border-color: var(--color-cyan);
           box-shadow: 0 0 8px var(--color-cyan-glow);
+          outline: none;
         }
 
         .form-textarea {
@@ -795,13 +777,36 @@ class RegisterPopup extends HTMLElement {
 
         /* プルダウン矢印のカスタム表現 */
         .form-select {
+          background-color: var(--bg-color-main);
+          border: 1.5px solid var(--color-cyan);
+          color: var(--color-cyan);
+          padding: 10px 40px 10px 16px;
+          font-size: 15px;
+          font-weight: bold;
+          border-radius: var(--border-radius-medium);
+          cursor: pointer;
+          transition: all 0.1s ease;
+          box-shadow: 0 4px 0 #0088b3, 0 6px 12px rgba(0, 0, 0, 0.4);
+          transform: translateY(0);
+          outline: none;
           appearance: none;
           -webkit-appearance: none;
-          background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300d2ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300d2ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
           background-repeat: no-repeat;
-          background-position: right 16px center;
+          background-position: right 14px center;
           background-size: 16px;
-          padding-right: 40px;
+          box-sizing: border-box;
+          width: 100%;
+        }
+
+        .form-select:hover {
+          background-color: #1a2333;
+          box-shadow: 0 4px 0 #0088b3, 0 8px 16px rgba(0, 0, 0, 0.6);
+        }
+
+        .form-select:active {
+          transform: translateY(4px);
+          box-shadow: 0 0px 0 #0088b3, 0 2px 4px rgba(0, 0, 0, 0.4);
         }
 
         .form-select option {
@@ -831,40 +836,43 @@ class RegisterPopup extends HTMLElement {
           font-weight: bold;
           border-radius: var(--border-radius-medium);
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.1s ease;
           min-width: 180px;
           text-align: center;
         }
 
         .action-btn.btn-cancel {
-          background: transparent;
+          background-color: var(--bg-color-main);
           border: 1.5px solid var(--color-cyan);
           color: var(--color-cyan);
+          box-shadow: 0 4px 0 #0088b3, 0 6px 12px rgba(0, 0, 0, 0.4);
+          transform: translateY(0);
         }
 
         .action-btn.btn-cancel:hover {
-          background-color: rgba(0, 210, 255, 0.08);
-          box-shadow: 0 0 8px var(--color-cyan-glow);
-          color: var(--color-cyan);
+          background-color: #1a2333;
+          box-shadow: 0 4px 0 #0088b3, 0 8px 16px rgba(0, 0, 0, 0.6);
         }
 
         .action-btn.btn-submit {
-          background-color: var(--color-cyan);
-          border: 1.5px solid var(--color-cyan);
+          background: linear-gradient(180deg, #00d2ff, #00aadd);
+          border: none;
           color: var(--bg-color-main);
-          box-shadow: 0 2px 6px rgba(0, 210, 255, 0.2);
+          box-shadow: 0 4px 0 #0088b3, 0 6px 12px rgba(0, 210, 255, 0.4);
+          transform: translateY(0);
         }
 
         .action-btn.btn-submit:hover {
-          background-color: var(--color-cyan);
-          box-shadow: 0 0 12px var(--color-cyan-glow);
+          background: linear-gradient(180deg, #33dbff, #1abfff);
+          box-shadow: 0 4px 0 #0088b3, 0 8px 16px rgba(0, 210, 255, 0.6);
         }
 
         .action-btn:active {
-          transform: scale(0.98);
+          transform: translateY(4px);
+          box-shadow: 0 0px 0 #0088b3, 0 2px 4px rgba(0, 210, 255, 0.4);
         }
 
-        /* 動画アップロード関係 */
+        /* コンテンツアップロード関係 */
         .video-upload-section {
           width: 100%;
           margin-bottom: 24px;
@@ -982,29 +990,6 @@ class RegisterPopup extends HTMLElement {
           word-break: break-all;
         }
 
-        .btn-change-video {
-          background-color: #0d1b2a;
-          border: 1.5px solid rgba(0, 210, 255, 0.5);
-          color: var(--text-color-cyan);
-          padding: 6px 12px;
-          font-size: 12px;
-          font-weight: bold;
-          border-radius: var(--border-radius-small);
-          cursor: pointer;
-          transition: all 0.2s;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          flex-shrink: 0;
-        }
-
-        .btn-change-video:hover {
-          background-color: var(--color-cyan);
-          color: var(--bg-color-main);
-          border-color: var(--color-cyan);
-          box-shadow: 0 0 12px var(--color-cyan-glow);
-        }
 
         /* 無効化レイアウト */
         .disabled-fields {
@@ -1013,7 +998,7 @@ class RegisterPopup extends HTMLElement {
           user-select: none;
         }
 
-        /* 上映動画に反映 */
+        /* 配信コンテンツに反映 */
         .sync-sites-group {
           margin-top: 20px;
         }
@@ -1155,7 +1140,7 @@ class RegisterPopup extends HTMLElement {
           align-self: center;
         }
 
-        /* 動画プレイヤー子モーダル */
+        /* コンテンツプレイヤー子モーダル */
         .video-player-modal {
           position: fixed;
           top: 0; left: 0; width: 100%; height: 100%;
@@ -1194,17 +1179,17 @@ class RegisterPopup extends HTMLElement {
       <div class="popup-wrapper">
         <!-- 上部ヘッダータイトル -->
         <div class="popup-header">
-          <span class="popup-title">動画を追加</span>
+          <span class="popup-title">コンテンツを追加</span>
           <button class="vmodal-close-btn popup-close-btn"></button>
         </div>
 
         <div class="popup-content">
-          <!-- 動画ファイル選択セクション（横幅いっぱい） -->
+          <!-- コンテンツファイル選択セクション（横幅いっぱい） -->
           <div class="video-upload-section">
             <div class="video-upload-box" id="videoUploadBox">
               <!-- 未設定時の表示 -->
               <div class="video-placeholder" id="videoPlaceholder">
-                <div class="video-placeholder-title">動画ファイル</div>
+                <div class="video-placeholder-title">コンテンツファイル</div>
                 <div class="video-placeholder-text">
                   <span>ファイルをドラッグ＆ドロップしてください</span>
                   <div class="video-placeholder-action">
@@ -1213,28 +1198,28 @@ class RegisterPopup extends HTMLElement {
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                       </svg>
-                      動画を選択
+                      コンテンツを選択
                     </button>
                   </div>
                 </div>
-                <div class="video-attention-text">※動画ファイルを選択すると、以降の入力項目が選択・編集可能になります。</div>
+                <div class="video-attention-text">※コンテンツファイルを選択すると、以降の入力項目が選択・編集可能になります。</div>
               </div>
 
-              <!-- 動画反映時の表示 -->
+              <!-- コンテンツ反映時の表示 -->
               <div class="video-preview-container" id="videoPreviewContainer" style="display: none;">
-                <div class="video-badge">動画ファイル</div>
+                <div class="video-badge">コンテンツファイル</div>
                 <div class="video-info-box">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-cyan);">
                     <polygon points="23 7 16 12 23 17 23 7"></polygon>
                     <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
                   </svg>
-                  <span id="selectedVideoFileName" class="video-file-name">動画ファイル名.mp4</span>
+                  <span id="selectedVideoFileName" class="video-file-name">コンテンツファイル名.mp4</span>
                 </div>
                 <button class="btn-change-video" id="changeVideoBtn">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                   </svg>
-                  動画を変更
+                  コンテンツを変更
                 </button>
               </div>
 
@@ -1278,7 +1263,7 @@ class RegisterPopup extends HTMLElement {
                 <input type="file" id="thumbnailUploadInput" accept="image/*" style="display: none;">
             </div>
 
-            <!-- サムネイル候補画像エリア（動画選択後のみ表示） -->
+            <!-- サムネイル候補画像エリア（コンテンツ選択後のみ表示） -->
             <div class="thumbnail-suggestions-section" id="thumbnailSuggestionsSection" style="display: none;">
               <div class="suggestions-label">サムネイル候補画像</div>
               <div class="suggestions-grid">
@@ -1294,12 +1279,12 @@ class RegisterPopup extends HTMLElement {
               </div>
             </div>
 
-            <!-- 動画を再生して確認ボタン -->
+            <!-- コンテンツを再生して確認ボタン -->
             <button class="action-btn btn-cancel btn-play-preview" id="playPreviewBtn">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
               </svg>
-              動画を確認する
+              コンテンツを確認する
             </button>
           </div>
 
@@ -1312,7 +1297,7 @@ class RegisterPopup extends HTMLElement {
 
               <div class="form-group">
                 <label class="form-label" for="movieDesc">説明</label>
-                <textarea id="movieDesc" class="form-textarea" placeholder="動画の説明を入力"></textarea>
+                <textarea id="movieDesc" class="form-textarea" placeholder="コンテンツの説明を入力"></textarea>
               </div>
 
               <!-- ソフトタイプとカテゴリを横並びにする行 -->
@@ -1321,7 +1306,7 @@ class RegisterPopup extends HTMLElement {
                   <label class="form-label" for="movieType">ソフトタイプ</label>
                   <select id="movieType" class="form-select">
                     <option value="" disabled selected hidden>ソフトタイプを選択</option>
-                    <option value="mp4">動画形式 (.mp4)</option>
+                    <option value="mp4">コンテンツ形式 (.mp4)</option>
                     <option value="3dcg">3DCGコンテンツ</option>
                   </select>
                 </div>
@@ -1335,9 +1320,9 @@ class RegisterPopup extends HTMLElement {
                 </div>
               </div>
 
-              <!-- 上映動画に反映セクション -->
+              <!-- 配信コンテンツに反映セクション -->
               <div class="form-group sync-sites-group">
-                <label class="form-label">上映動画に反映</label>
+                <label class="form-label">配信コンテンツに反映</label>
                 <div class="sync-sites-list">
                   <label class="sync-site-item">
                     <input type="checkbox" name="syncSites" value="1">
@@ -1372,7 +1357,7 @@ class RegisterPopup extends HTMLElement {
       </div>
     </div>
 
-    <!-- 動画プレイヤー用子モーダル -->
+    <!-- コンテンツプレイヤー用子モーダル -->
     <div class="video-player-modal" id="videoPlayerModal" style="display: none;">
       <div class="video-player-overlay" id="videoPlayerOverlay"></div>
       <div class="video-player-wrapper">
@@ -1381,7 +1366,7 @@ class RegisterPopup extends HTMLElement {
           <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--color-cyan)" stroke="none">
             <polygon points="5 3 19 12 5 21 5 3"></polygon>
           </svg>
-          <span style="color: var(--color-cyan); font-size: 16px; font-weight: bold; letter-spacing: 1px;">動画プレビュー表示枠</span>
+          <span style="color: var(--color-cyan); font-size: 16px; font-weight: bold; letter-spacing: 1px;">コンテンツプレビュー表示枠</span>
         </div>
       </div>
     </div>

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="動画管理システム adeliaeXR Distributor の同期設定画面。管理PCに登録されている動画を選択し、現場機器と同期します。">
-  <title>上映動画 | adeliaeXR Distributor</title>
+  <meta name="description" content="コンテンツ管理システム adeliaeXR Distributor の同期設定画面。管理PCに登録されているコンテンツを選択し、現場機器と同期します。">
+  <title>配信コンテンツ | adeliaeXR Distributor</title>
   
   <!-- CSS定義のインポート -->
   <link rel="stylesheet" href="css/style.css">
@@ -18,7 +18,7 @@
 <body>
   <div class="app-container">
     <!-- 共通ヘッダーコンポーネント (ページロード時にタイトルを動的に書き換えます) -->
-    <app-header active-tab="monitoring" alert-count="1" page-title="1号棟 - 上映動画" breadcrumbs='[{"name": "設置現場 監視", "url": "index.html"}, {"name": "1号棟 - 詳細 / 設定", "url": "manage.html?id=1"}, {"name": "上映動画"}]' building-id="1"></app-header>
+    <app-header active-tab="monitoring" alert-count="1" page-title="1号棟 - 配信コンテンツ" breadcrumbs='[{"name": "設置現場 監視", "url": "index.html"}, {"name": "1号棟 - 詳細 / 設定", "url": "manage.html?id=1"}, {"name": "配信コンテンツ"}]' building-id="1"></app-header>
     
     <!-- メインコンテンツエリア -->
     <main class="main-content">
@@ -31,18 +31,18 @@
       <div class="sync-panels-wrapper">
         <!-- 左側：管理PC（シアン枠） -->
         <div class="sync-panel panel-pc">
-          <div class="panel-header-title" style="margin-bottom: 12px;">動画マスター</div>
+          <div class="panel-header-title" style="margin-bottom: 12px;">全体コンテンツ</div>
           
           <!-- 全選択コントロール行 -->
-          <div class="sync-bulk-control" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; height: 36px; box-sizing: border-box; border-bottom: 1px solid rgba(0, 210, 255, 0.1);">
+          <div class="sync-bulk-control" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; height: 60px; box-sizing: border-box; border-bottom: 1px solid rgba(0, 210, 255, 0.1);">
             <label style="margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
               <input type="checkbox" id="selectAllMovies" style="cursor: pointer; accent-color: var(--color-cyan); width: 15px; height: 15px; margin: 0;">
-              <span style="color: var(--text-color-primary); font-size: 14px; user-select: none;">すべての動画を選択する</span>
+              <span style="color: var(--text-color-primary); font-size: 14px; user-select: none;">すべてのコンテンツを選択する</span>
             </label>
             <span id="selectAllMoviesStatus" style="font-size: 12px; color: var(--text-color-secondary);">選択中: 0件</span>
           </div>
 
-          <!-- PC側動画カテゴリコンテナ -->
+          <!-- PC側コンテンツカテゴリコンテナ -->
           <div id="pcMoviesContainer" style="display: flex; flex-direction: column; gap: 24px;">
             <!-- js/app.js から描画されます -->
           </div>
@@ -50,20 +50,20 @@
 
         <!-- 右側：号棟側（グリーン枠） -->
         <div class="sync-panel panel-device" id="devicePanel">
-          <div class="panel-header-title" id="devicePanelTitle" style="margin-bottom: 12px;">1号棟 上映動画</div>
+          <div class="panel-header-title" id="devicePanelTitle" style="margin-bottom: 12px;">1号棟 配信コンテンツ</div>
           
           <!-- 他の設置現場との同期設定 -->
-          <div class="sync-source-control" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; height: 36px; box-sizing: border-box; border-bottom: 1px solid rgba(0, 210, 255, 0.1);">
+          <div class="sync-source-control" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; height: 60px; box-sizing: border-box; border-bottom: 1px solid rgba(0, 210, 255, 0.1);">
             <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-              <label style="color: var(--text-color-primary); font-size: 14px; user-select: none; white-space: nowrap;">他の現場の上映動画と同じにする：</label>
-              <select class="config-select" id="syncSourceSelect" style="width: auto; flex: 1; max-width: 250px; font-size: 13px; padding: 4px 32px 4px 12px; background-color: var(--bg-color-main); border: 1px solid rgba(0, 210, 255, 0.3); border-radius: var(--border-radius-small); color: var(--text-color-primary); cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('data:image/svg+xml;utf8,<svg width=&quot;10&quot; height=&quot;6&quot; viewBox=&quot;0 0 10 6&quot; fill=&quot;none&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;><path d=&quot;M1 1L5 5L9 1&quot; stroke=&quot;%2300D2FF&quot; stroke-width=&quot;1.5&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 10px 6px;">
-                <option value="none">-- 自分で動画を選択する --</option>
+              <label style="color: var(--text-color-primary); font-size: 14px; user-select: none; white-space: nowrap;">他の現場の配信コンテンツと同じにする：</label>
+              <select class="category-filter-select" id="syncSourceSelect" style="width: auto; flex: 1; max-width: 250px; font-size: 13px; margin: 0; min-width: auto; padding: 10px 40px 10px 16px;">
+                <option value="none">-- 自分でコンテンツを選択する --</option>
                 <!-- 他の号棟は js/app.js で動的に生成 -->
               </select>
             </div>
           </div>
 
-          <!-- 機器側動画カテゴリコンテナ -->
+          <!-- 機器側コンテンツカテゴリコンテナ -->
           <div id="deviceMoviesContainer" style="display: flex; flex-direction: column; gap: 24px;">
             <!-- js/app.js から描画されます -->
           </div>
@@ -72,9 +72,9 @@
 
       <!-- 下部同期実行・キャンセルボタン -->
       <div class="sync-execute-container" style="display: flex; justify-content: center; gap: 16px;">
-        <button class="add-category-btn" id="syncCancelBtn" style="margin: 0; padding: 12px 32px; font-size: 15px; font-weight: bold; background: transparent; border: 1.5px solid var(--color-cyan); color: var(--color-cyan); border-radius: var(--border-radius-medium); cursor: pointer; transition: all 0.2s;">キャンセル</button>
-        <button class="sync-execute-btn" id="syncExecuteBtn" style="margin: 0; padding: 12px 32px; width: auto; max-width: none; font-size: 15px; letter-spacing: normal; display: inline-flex; align-items: center; gap: 8px; justify-content: center;">
-          選択した動画を反映する
+        <button class="add-category-btn" id="syncCancelBtn" style="margin: 0; padding: 12px 32px;">キャンセル</button>
+        <button class="sync-execute-btn" id="syncExecuteBtn" style="margin: 0; padding: 12px 32px; width: auto; max-width: none; letter-spacing: normal; display: inline-flex; align-items: center; gap: 8px; justify-content: center;">
+          選択したコンテンツを反映する
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M23 4v6h-6M1 20v-6h6"/>
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
@@ -90,7 +90,6 @@
     <div class="popup-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); z-index: 1;"></div>
     <div class="sync-progress-wrapper" style="position: relative; z-index: 2; width: 90%; max-width: 400px; background-color: var(--bg-color-card); border: 1.5px solid var(--color-status-green); border-radius: var(--border-radius-large); padding: 32px 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px;">
       
-      <!-- スピナーアニメーション用のスタイル定義 -->
       <style>
         @keyframes syncSpinnerSpin {
           0% { transform: rotate(0deg); }
@@ -112,13 +111,13 @@
       </div>
 
       <!-- テキスト表示 -->
-      <div id="syncProgressStatus" style="font-size: 18px; font-weight: bold; color: var(--color-status-green); min-height: 27px;">動画を反映中...</div>
+      <div id="syncProgressStatus" style="font-size: 18px; font-weight: bold; color: var(--color-status-green); min-height: 27px;">コンテンツを反映中...</div>
       <div id="syncProgressDesc" style="font-size: 13px; color: var(--text-color-secondary); line-height: 1.5;">
         <span style="white-space: nowrap;">しばらくお待ちください。</span>
       </div>
 
       <!-- 閉じるボタン (完了時のみ表示) -->
-      <button class="btn-status-green" id="syncProgressCloseBtn" style="display: none; width: auto; min-width: 140px; padding: 10px 32px; margin: 0; font-size: 15px; font-weight: bold; border-radius: var(--border-radius-medium); cursor: pointer;">OK</button>
+      <button class="btn-status-green" id="syncProgressCloseBtn" style="display: none; width: auto; min-width: 140px; margin: 0;">OK</button>
     </div>
   </div>
 </body>

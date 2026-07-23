@@ -102,7 +102,7 @@ class MovieDetailPopup extends HTMLElement {
         existingNote.remove();
       }
 
-      // 他の現場と上映動画を同じにしているかをチェック
+      // 他の現場と配信コンテンツを同じにしているかをチェック
       const syncSourceKey = `adeliae_sync_source_building_${id}`;
       const syncSourceVal = localStorage.getItem(syncSourceKey) || 'none';
 
@@ -116,7 +116,7 @@ class MovieDetailPopup extends HTMLElement {
         const targetName = localStorage.getItem(`adeliae_building_name_${syncSourceVal}`) || `${syncSourceVal}号棟`;
         const noteSpan = document.createElement('span');
         noteSpan.className = 'sync-site-note';
-        noteSpan.textContent = ` （${targetName}の上映動画と同じにしています）`;
+        noteSpan.textContent = ` （${targetName}の配信コンテンツと同じにしています）`;
         noteSpan.style.color = 'var(--text-color-secondary)';
         noteSpan.style.fontSize = '12px';
         noteSpan.style.marginLeft = '8px';
@@ -279,7 +279,7 @@ class MovieDetailPopup extends HTMLElement {
   }
 
   deleteMovie() {
-    if (confirm(`動画「${this.movie.title}」を削除してもよろしいですか？`)) {
+    if (confirm(`コンテンツ「${this.movie.title}」を削除してもよろしいですか？`)) {
       this.dispatchEvent(new CustomEvent('movie-delete', {
         detail: {
           movieId: this.movie.id
@@ -541,22 +541,30 @@ class MovieDetailPopup extends HTMLElement {
         }
 
         .inline-file-select-btn {
-          background-color: transparent;
-          border: 1px solid var(--color-cyan);
+          background-color: var(--bg-color-main);
+          border: 1.5px solid var(--color-cyan);
           color: var(--color-cyan);
           padding: 6px 12px;
           border-radius: var(--border-radius-small);
           font-size: 13px;
           font-weight: bold;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.1s ease;
+          box-shadow: 0 3px 0 #0088b3, 0 4px 8px rgba(0, 0, 0, 0.4);
+          transform: translateY(0);
           display: inline-flex;
           align-items: center;
           gap: 6px;
         }
 
         .inline-file-select-btn:hover {
-          background-color: rgba(0, 210, 255, 0.1);
+          background-color: #1a2333;
+          box-shadow: 0 3px 0 #0088b3, 0 6px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .inline-file-select-btn:active {
+          transform: translateY(3px);
+          box-shadow: 0 0px 0 #0088b3, 0 2px 4px rgba(0, 0, 0, 0.4);
         }
 
         .thumbnail-preview-container {
@@ -599,32 +607,6 @@ class MovieDetailPopup extends HTMLElement {
           box-shadow: 0 0 4px var(--color-cyan-glow);
         }
 
-        .btn-change-image {
-          position: absolute;
-          top: 12px;
-          right: 12px;
-          background-color: #0d1b2a;
-          border: 1.5px solid rgba(0, 210, 255, 0.5);
-          color: var(--text-color-cyan);
-          padding: 6px 12px;
-          font-size: 12px;
-          font-weight: bold;
-          border-radius: var(--border-radius-small);
-          cursor: pointer;
-          transition: all 0.2s;
-          z-index: 2;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .btn-change-image:hover {
-          background-color: var(--color-cyan);
-          color: var(--bg-color-main);
-          border-color: var(--color-cyan);
-          box-shadow: 0 0 12px var(--color-cyan-glow);
-        }
 
         /* サムネイル候補画像 */
         .thumbnail-suggestions-section {
@@ -713,7 +695,7 @@ class MovieDetailPopup extends HTMLElement {
           letter-spacing: 0.05em;
         }
 
-        .form-input, .form-textarea, .form-select {
+        .form-input, .form-textarea {
           background-color: var(--bg-color-main);
           border: 1px solid rgba(0, 210, 255, 0.25);
           border-radius: var(--border-radius-medium);
@@ -729,6 +711,7 @@ class MovieDetailPopup extends HTMLElement {
         .form-input:focus, .form-textarea:focus, .form-select:focus {
           border-color: var(--color-cyan);
           box-shadow: 0 0 8px var(--color-cyan-glow);
+          outline: none;
         }
 
         .form-textarea {
@@ -753,13 +736,36 @@ class MovieDetailPopup extends HTMLElement {
 
         /* プルダウン矢印のカスタム表現 */
         .form-select {
+          background-color: var(--bg-color-main);
+          border: 1.5px solid var(--color-cyan);
+          color: var(--color-cyan);
+          padding: 10px 40px 10px 16px;
+          font-size: 15px;
+          font-weight: bold;
+          border-radius: var(--border-radius-medium);
+          cursor: pointer;
+          transition: all 0.1s ease;
+          box-shadow: 0 4px 0 #0088b3, 0 6px 12px rgba(0, 0, 0, 0.4);
+          transform: translateY(0);
+          outline: none;
           appearance: none;
           -webkit-appearance: none;
-          background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300d2ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300d2ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
           background-repeat: no-repeat;
-          background-position: right 16px center;
+          background-position: right 14px center;
           background-size: 16px;
-          padding-right: 40px;
+          box-sizing: border-box;
+          width: 100%;
+        }
+
+        .form-select:hover {
+          background-color: #1a2333;
+          box-shadow: 0 4px 0 #0088b3, 0 8px 16px rgba(0, 0, 0, 0.6);
+        }
+
+        .form-select:active {
+          transform: translateY(4px);
+          box-shadow: 0 0px 0 #0088b3, 0 2px 4px rgba(0, 0, 0, 0.4);
         }
 
         .form-select option {
@@ -767,7 +773,7 @@ class MovieDetailPopup extends HTMLElement {
           color: var(--text-color-primary);
         }
 
-        /* 上映動画に反映 */
+        /* 配信コンテンツに反映 */
         .sync-sites-group {
           margin-top: 20px;
         }
@@ -871,50 +877,58 @@ class MovieDetailPopup extends HTMLElement {
           font-weight: bold;
           border-radius: var(--border-radius-medium);
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.1s ease;
           min-width: 180px;
           text-align: center;
         }
 
         .action-btn.btn-cancel {
-          background: transparent;
+          background-color: var(--bg-color-main);
           border: 1.5px solid var(--color-cyan);
           color: var(--color-cyan);
+          box-shadow: 0 4px 0 #0088b3, 0 6px 12px rgba(0, 0, 0, 0.4);
+          transform: translateY(0);
         }
 
         .action-btn.btn-cancel:hover {
-          background-color: rgba(0, 210, 255, 0.08);
-          box-shadow: 0 0 8px var(--color-cyan-glow);
-          color: var(--color-cyan);
+          background-color: #1a2333;
+          box-shadow: 0 4px 0 #0088b3, 0 8px 16px rgba(0, 0, 0, 0.6);
         }
 
         .action-btn.btn-submit {
-          background-color: var(--color-cyan);
-          border: 1.5px solid var(--color-cyan);
+          background: linear-gradient(180deg, #00d2ff, #00aadd);
+          border: none;
           color: var(--bg-color-main);
-          box-shadow: 0 2px 6px rgba(0, 210, 255, 0.2);
+          box-shadow: 0 4px 0 #0088b3, 0 6px 12px rgba(0, 210, 255, 0.4);
+          transform: translateY(0);
         }
 
         .action-btn.btn-submit:hover {
-          background-color: var(--color-cyan);
-          box-shadow: 0 0 12px var(--color-cyan-glow);
+          background: linear-gradient(180deg, #33dbff, #1abfff);
+          box-shadow: 0 4px 0 #0088b3, 0 8px 16px rgba(0, 210, 255, 0.6);
         }
 
         .action-btn.btn-delete {
-          background-color: transparent;
+          background-color: var(--bg-color-main);
           border: 1.5px solid var(--color-status-red);
           color: var(--color-status-red);
-          box-shadow: 0 2px 6px rgba(255, 77, 77, 0.05);
+          box-shadow: 0 4px 0 #cc3333, 0 6px 12px rgba(0, 0, 0, 0.4);
+          transform: translateY(0);
         }
 
         .action-btn.btn-delete:hover {
-          background-color: rgba(255, 77, 77, 0.08);
-          box-shadow: 0 0 8px rgba(255, 77, 77, 0.3);
-          color: var(--color-status-red);
+          background-color: #2b1a1a;
+          box-shadow: 0 4px 0 #cc3333, 0 8px 16px rgba(255, 77, 77, 0.4);
         }
 
         .action-btn:active {
-          transform: scale(0.98);
+          transform: translateY(4px);
+          box-shadow: 0 0px 0 #0088b3, 0 2px 4px rgba(0, 210, 255, 0.4);
+        }
+
+        .action-btn.btn-delete:active {
+          transform: translateY(4px);
+          box-shadow: 0 0px 0 #cc3333, 0 2px 4px rgba(255, 77, 77, 0.2);
         }
 
         .btn-play-preview {
@@ -929,7 +943,7 @@ class MovieDetailPopup extends HTMLElement {
           align-self: center;
         }
 
-        /* 動画プレイヤー子モーダル */
+        /* コンテンツプレイヤー子モーダル */
         .video-player-modal {
           position: fixed;
           top: 0; left: 0; width: 100%; height: 100%;
@@ -968,7 +982,7 @@ class MovieDetailPopup extends HTMLElement {
       <div class="popup-wrapper">
         <!-- 上部ヘッダータイトル -->
         <div class="popup-header">
-          <span class="popup-title">動画の編集</span>
+          <span class="popup-title">コンテンツの編集</span>
           <button class="vmodal-close-btn popup-close-btn"></button>
         </div>
 
@@ -1025,12 +1039,12 @@ class MovieDetailPopup extends HTMLElement {
                 </div>
               </div>
 
-              <!-- 動画を再生して確認ボタン -->
+              <!-- コンテンツを再生して確認ボタン -->
               <button class="action-btn btn-cancel btn-play-preview" id="playPreviewBtn">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                   <polygon points="5 3 19 12 5 21 5 3"></polygon>
                 </svg>
-                動画を確認する
+                コンテンツを確認する
               </button>
             </div>
 
@@ -1043,7 +1057,7 @@ class MovieDetailPopup extends HTMLElement {
 
               <div class="form-group">
                 <label class="form-label" for="movieDesc">説明</label>
-                <textarea id="movieDesc" class="form-textarea" placeholder="動画の説明を入力">${this.movie.desc || ''}</textarea>
+                <textarea id="movieDesc" class="form-textarea" placeholder="コンテンツの説明を入力">${this.movie.desc || ''}</textarea>
               </div>
 
               <!-- ソフトタイプとカテゴリ横並び -->
@@ -1064,9 +1078,9 @@ class MovieDetailPopup extends HTMLElement {
                 </div>
               </div>
 
-              <!-- 上映動画に反映セクション -->
+              <!-- 配信コンテンツに反映セクション -->
               <div class="form-group sync-sites-group">
-                <label class="form-label">上映動画に反映</label>
+                <label class="form-label">配信コンテンツに反映</label>
                 <div class="sync-sites-list">
                   <label class="sync-site-item">
                     <input type="checkbox" name="syncSites" value="1">
@@ -1103,7 +1117,7 @@ class MovieDetailPopup extends HTMLElement {
         </div>
       </div>
 
-      <!-- 動画プレイヤー用子モーダル -->
+      <!-- コンテンツプレイヤー用子モーダル -->
       <div class="video-player-modal" id="videoPlayerModal" style="display: none;">
         <div class="video-player-overlay" id="videoPlayerOverlay"></div>
         <div class="video-player-wrapper">
@@ -1112,7 +1126,7 @@ class MovieDetailPopup extends HTMLElement {
             <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--color-cyan)" stroke="none">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
-            <span style="color: var(--color-cyan); font-size: 16px; font-weight: bold; letter-spacing: 1px;">動画プレビュー表示枠</span>
+            <span style="color: var(--color-cyan); font-size: 16px; font-weight: bold; letter-spacing: 1px;">コンテンツプレビュー表示枠</span>
           </div>
         </div>
       </div>

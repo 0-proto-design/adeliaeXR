@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="動画管理システム adeliaeXR Distributor の全体動画管理画面。上映する動画の登録・編集・カテゴリ管理を行えます。">
-  <title>動画マスター管理 | adeliaeXR Distributor</title>
+  <meta name="description" content="コンテンツ管理システム adeliaeXR Distributor の全体コンテンツ管理画面。上映するコンテンツの登録・編集・カテゴリ管理を行えます。">
+  <title>全体コンテンツ管理 | adeliaeXR Distributor</title>
   
   <!-- CSS定義のインポート -->
   <link rel="stylesheet" href="css/style.css">
@@ -20,27 +20,27 @@
 </head>
 <body>
   <div class="app-container">
-    <!-- 共通ヘッダーコンポーネント (アクティブタブ: contents (全体動画管理), アラートカウント: 1, ページタイトル: 全体動画管理) -->
-    <app-header active-tab="contents" alert-count="1" page-title="動画マスター管理"></app-header>
+    <!-- 共通ヘッダーコンポーネント (アクティブタブ: contents (全体コンテンツ管理), アラートカウント: 1, ページタイトル: 全体コンテンツ管理) -->
+    <app-header active-tab="contents" alert-count="1" page-title="全体コンテンツ管理"></app-header>
     
     <!-- メインコンテンツエリア -->
     <main class="main-content">
       <!-- ページ上部アクション -->
       <div class="action-bar">
         <button class="add-category-btn" id="addCategoryBtn">カテゴリ編集</button>
-        <button class="new-register-btn" id="newRegisterBtn">＋ 動画を追加</button>
+        <button class="new-register-btn" id="newRegisterBtn">＋ コンテンツを追加</button>
       </div>
 
-      <!-- カテゴリと動画の一覧は js/app.js から動的にレンダリングされます -->
+      <!-- カテゴリとコンテンツの一覧は js/app.js から動的にレンダリングされます -->
     </main>
     
     <!-- カテゴリ管理ポップアップコンポーネント -->
     <category-popup></category-popup>
 
-    <!-- 動画新規登録ポップアップコンポーネント -->
+    <!-- コンテンツ新規登録ポップアップコンポーネント -->
     <register-popup></register-popup>
 
-    <!-- 動画編集・詳細ポップアップコンポーネント -->
+    <!-- コンテンツ編集・詳細ポップアップコンポーネント -->
     <movie-detail-popup></movie-detail-popup>
   </div>
 </body>

@@ -221,16 +221,17 @@ class BuildingCard extends HTMLElement {
         }
 
         .zoom-btn {
-          background-color: transparent;
-          border: 1px solid var(--color-cyan);
+          background-color: var(--bg-color-main);
+          border: 1.5px solid var(--color-cyan);
           color: var(--color-cyan);
           padding: 4px 10px;
           font-size: 11px;
           font-weight: bold;
           border-radius: var(--border-radius-small);
           cursor: pointer;
-          transition: all 0.2s;
-          box-shadow: 0 0 4px var(--color-cyan-glow);
+          transition: all 0.1s ease;
+          box-shadow: 0 3px 0 #0088b3, 0 4px 8px rgba(0, 0, 0, 0.4);
+          transform: translateY(0);
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -240,9 +241,13 @@ class BuildingCard extends HTMLElement {
         }
 
         .zoom-btn:hover {
-          background-color: var(--color-cyan);
-          color: var(--bg-color-main);
-          box-shadow: 0 0 8px var(--color-cyan-glow);
+          background-color: #1a2333;
+          box-shadow: 0 3px 0 #0088b3, 0 6px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .zoom-btn:active {
+          transform: translateY(3px);
+          box-shadow: 0 0px 0 #0088b3, 0 2px 4px rgba(0, 0, 0, 0.4);
         }
 
         /* 下部エリア */
@@ -257,16 +262,17 @@ class BuildingCard extends HTMLElement {
 
         /* 詳細/管理 ボタン */
         .detail-btn {
-          background-color: var(--color-cyan);
-          border: 1.5px solid var(--color-cyan);
+          background: linear-gradient(180deg, #00d2ff, #00aadd);
+          border: none;
           color: var(--bg-color-main);
           padding: 8px 28px 8px 36px;
           font-size: 15px;
           font-weight: bold;
           border-radius: var(--border-radius-medium);
           cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 2px 6px rgba(0, 210, 255, 0.2);
+          transition: all 0.1s ease;
+          box-shadow: 0 4px 0 #0088b3, 0 6px 12px rgba(0, 210, 255, 0.4);
+          transform: translateY(0);
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -274,12 +280,13 @@ class BuildingCard extends HTMLElement {
         }
 
         .detail-btn:hover {
-          background-color: var(--color-cyan);
-          box-shadow: 0 0 12px var(--color-cyan-glow);
+          background: linear-gradient(180deg, #33dbff, #1abfff);
+          box-shadow: 0 4px 0 #0088b3, 0 8px 16px rgba(0, 210, 255, 0.6);
         }
 
         .detail-btn:active {
-          transform: scale(0.97);
+          transform: translateY(4px);
+          box-shadow: 0 0px 0 #0088b3, 0 2px 4px rgba(0, 210, 255, 0.4);
         }
       </style>
 
@@ -311,7 +318,7 @@ class BuildingCard extends HTMLElement {
               <span class="info-value">${appType}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">動画名</span>
+              <span class="info-label">コンテンツ名</span>
               <span class="info-value">${contentName}</span>
             </div>
           </div>

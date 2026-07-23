@@ -78,9 +78,21 @@ class CategoryPopup extends HTMLElement {
 
   deleteCategory(index) {
     const cat = this.categories[index];
-    const confirmMessage = `カテゴリ「${cat.name}」を削除しますか？\n(カテゴリ内の動画は削除されず、「未分類」に移動します)`;
+    const confirmMessage = `カテゴリ「${cat.name}」を削除しますか？\n(カテゴリ内のコンテンツは削除されず、「未分類」に移動します)`;
     if (confirm(confirmMessage)) {
-      this.categories.splice(index, 1);
+      if (cat.movies && cat.movies.length > 0) {
+        let uncat = this.categories.find(c => c.id === 'cat_uncategorized');
+        if (!uncat) {
+          uncat = { id: 'cat_uncategorized', name: '未分類', movies: [] };
+          this.categories.push(uncat);
+        }
+        uncat.movies.push(...cat.movies);
+      }
+      // Re-find index in case push affected something, though push to end doesn't shift existing indices
+      const currentIndex = this.categories.findIndex(c => c.id === cat.id);
+      if (currentIndex !== -1) {
+        this.categories.splice(currentIndex, 1);
+      }
       this.renderListOnly();
     }
   }
@@ -203,6 +215,7 @@ class CategoryPopup extends HTMLElement {
         </div>
 
         <div class="cat-item-actions">
+          ${cat.id === 'cat_uncategorized' ? '' : `
           <!-- 編集ボタン -->
           <button class="action-icon edit-icon" title="名前を変更">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -227,6 +240,7 @@ class CategoryPopup extends HTMLElement {
               <line x1="14" y1="11" x2="14" y2="17"/>
             </svg>
           </button>
+          `}
         </div>
       </div>
     `).join('');
@@ -273,21 +287,28 @@ class CategoryPopup extends HTMLElement {
         }
 
         .btn-add-cat {
-          background-color: var(--color-cyan);
-          border: 1.5px solid var(--color-cyan);
+          background: linear-gradient(180deg, #00d2ff, #00aadd);
+          border: none;
           color: var(--bg-color-main);
           padding: 10px 20px;
           font-size: 15px;
           font-weight: bold;
           border-radius: var(--border-radius-medium);
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.1s ease;
+          box-shadow: 0 4px 0 #0088b3, 0 6px 12px rgba(0, 210, 255, 0.4);
+          transform: translateY(0);
           white-space: nowrap;
         }
 
         .btn-add-cat:hover {
-          background-color: var(--color-cyan);
-          box-shadow: 0 0 10px var(--color-cyan-glow);
+          background: linear-gradient(180deg, #33dbff, #1abfff);
+          box-shadow: 0 4px 0 #0088b3, 0 8px 16px rgba(0, 210, 255, 0.6);
+        }
+
+        .btn-add-cat:active {
+          transform: translateY(4px);
+          box-shadow: 0 0px 0 #0088b3, 0 2px 4px rgba(0, 210, 255, 0.4);
         }
 
         /* カテゴリリスト */
